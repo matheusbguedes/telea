@@ -1,0 +1,89 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "telea",
+  "version": "0.1.0",
+  "identifier": "com.matheusborges.telea",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Telea",
+        "width": 800,
+        "height": 600,
+        "center": true,
+        "fullscreen": false,
+        "transparent": true,
+        "hiddenTitle": true,
+        "titleBarStyle": "Overlay",
+        "dragDropEnabled": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; media-src 'self' mediastream:; connect-src 'self' ipc: http://ipc.localhost; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "capabilities": [
+        {
+          "identifier": "main-capability",
+          "windows": ["main"],
+          "permissions": [
+            "store:default",
+            "core:window:allow-start-dragging",
+            "core:window:allow-create",
+            "core:window:allow-current-monitor",
+            "core:webview:allow-create-webview-window",
+            "core:webview:allow-get-all-webviews",
+            "core:window:allow-destroy",
+            "core:window:allow-close",
+            "core:window:allow-show",
+            "core:window:allow-set-position",
+            "core:event:allow-emit",
+            "core:event:allow-listen",
+            "core:event:default"
+          ]
+        },
+        {
+          "identifier": "prompt-capability",
+          "windows": ["prompt"],
+          "permissions": [
+            "store:default",
+            "core:window:allow-close",
+            "core:window:allow-hide",
+            "core:window:allow-show",
+            "core:window:allow-destroy",
+            "core:event:allow-emit",
+            "core:event:allow-listen",
+            "core:event:default"
+          ]
+        }
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "entitlements": "entitlements.plist",
+      "exceptionDomain": null,
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null,
+      "minimumSystemVersion": "10.13",
+      "files": {
+        "Info.plist": "Info.plist"
+      }
+    }
+  }
+}

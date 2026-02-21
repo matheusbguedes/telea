@@ -1,0 +1,208 @@
+import { motion } from 'framer-motion';
+import { Color, Mesh, Program, Renderer, Triangle } from 'ogl';
+import { useEffect, useRef } from 'react';
+
+const VERT = `#version 300 es
+in vec2 position;
+void main() {
+  gl_Position = vec4(position, 0.0, 1.0);
+}
+`;
+
+const FRAG = `#version 300 es
+precision highp float;
+
+uniform float uTime;
+uniform float uAmplitude;
+uniform vec3 uColorStops[3];
+uniform vec2 uResolution;
+uniform float uBlend;
+
+out vec4 fragColor;
+
+vec3 permute(vec3 x) {
+  return mod(((x * 34.0) + 1.0) * x, 289.0);
+}
+
+float snoise(vec2 v) {
+  const vec4 C = vec4(
+    0.211324865405187, 0.366025403784439,
+    -0.577350269189626, 0.024390243902439
+  );
+  vec2 i  = floor(v + dot(v, C.yy));
+  vec2 x0 = v - i + dot(i, C.xx);
+  vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+  vec4 x12 = x0.xyxy + C.xxzz;
+  x12.xy -= i1;
+  i = mod(i, 289.0);
+  vec3 p = permute(
+    permute(i.y + vec3(0.0, i1.y, 1.0))
+    + i.x + vec3(0.0, i1.x, 1.0)
+  );
+  vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+  m = m * m * m * m;
+  vec3 x = 2.0 * fract(p * C.www) - 1.0;
+  vec3 h = abs(x) - 0.5;
+  vec3 ox = floor(x + 0.5);
+  vec3 a0 = x - ox;
+  m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+  vec3 g;
+  g.x  = a0.x  * x0.x  + h.x  * x0.y;
+  g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+  return 130.0 * dot(m, g);
+}
+
+struct ColorStop {
+  vec3 color;
+  float position;
+};
+
+#define COLOR_RAMP(colors, factor, finalColor) {              \
+  int index = 0;                                             \
+  for (int i = 0; i < 2; i++) {                              \
+    ColorStop currentColor = colors[i];                      \
+    bool isInBetween = currentColor.position <= factor;      \
+    index = int(mix(float(index), float(i), float(isInBetween))); \
+  }                                                          \
+  ColorStop currentColor = colors[index];                    \
+  ColorStop nextColor = colors[index + 1];                   \
+  float range = nextColor.position - currentColor.position;  \
+  float lerpFactor = (factor - currentColor.position) / range; \
+  finalColor = mix(currentColor.color, nextColor.color, lerpFactor); \
+}
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / uResolution;
+
+  uv.y = 1.0 - uv.y;
+
+  ColorStop colors[3];
+  colors[0] = ColorStop(uColorStops[0], 0.0);
+  colors[1] = ColorStop(uColorStops[1], 0.5);
+  colors[2] = ColorStop(uColorStops[2], 1.0);
+
+  vec3 rampColor;
+  COLOR_RAMP(colors, uv.x, rampColor);
+
+  float noise1 = snoise(vec2(uv.x * 1.8 + uTime * 0.12, uTime * 0.2)) * 0.5;
+  float noise2 = snoise(vec2(uv.x * 3.2 - uTime * 0.08, uTime * 0.15 + 1.5)) * 0.25;
+  float wave = (noise1 + noise2) * uAmplitude;
+
+  wave = exp(wave);
+  float height = uv.y * 2.0 - wave + 0.1;
+  float intensity = 0.55 * height;
+
+  float midPoint = 0.18;
+  float auroraAlpha = smoothstep(midPoint - uBlend * 0.5, midPoint + uBlend * 0.5, intensity);
+
+  vec3 auroraColor = intensity * rampColor;
+
+  fragColor = vec4(auroraColor * auroraAlpha, auroraAlpha);
+}
+`;
+
+interface VoiceIndicatorProps {
+  isSpeaking: boolean;
+  visible: boolean;
+}
+
+export default function VoiceIndicator({ isSpeaking, visible }: VoiceIndicatorProps) {
+  const ctnRef = useRef<HTMLDivElement>(null);
+  const amplitudeRef = useRef(0.3);
+  const targetAmplitudeRef = useRef(0.3);
+
+  useEffect(() => {
+    targetAmplitudeRef.current = isSpeaking ? 1.4 : 0.3;
+  }, [isSpeaking]);
+
+  useEffect(() => {
+    const ctn = ctnRef.current;
+    if (!ctn) return;
+
+    const renderer = new Renderer({ alpha: true, premultipliedAlpha: true, antialias: true });
+    const gl = renderer.gl;
+    gl.clearColor(0, 0, 0, 0);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.canvas.style.backgroundColor = 'transparent';
+
+    const colorStops = ["#C084FC", "#7C3AED", "#4C1D95"];
+    const colorStopsArray = colorStops.map(hex => {
+      const c = new Color(hex);
+      return [c.r, c.g, c.b];
+    });
+
+    const geometry = new Triangle(gl);
+    if (geometry.attributes.uv) delete geometry.attributes.uv;
+
+    const program = new Program(gl, {
+      vertex: VERT,
+      fragment: FRAG,
+      uniforms: {
+        uTime: { value: 0 },
+        uAmplitude: { value: 0.3 },
+        uColorStops: { value: colorStopsArray },
+        uResolution: { value: [ctn.offsetWidth, ctn.offsetHeight] },
+        uBlend: { value: 0.6 },
+      }
+    });
+
+    const mesh = new Mesh(gl, { geometry, program });
+    ctn.appendChild(gl.canvas);
+
+    gl.canvas.style.borderRadius = '0 0 0.75rem 0.75rem';
+
+    const resize = () => {
+      renderer.setSize(ctn.offsetWidth, ctn.offsetHeight);
+      program.uniforms.uResolution.value = [ctn.offsetWidth, ctn.offsetHeight];
+    };
+    window.addEventListener('resize', resize);
+    resize();
+
+    let animateId = 0;
+    const update = (t: number) => {
+      animateId = requestAnimationFrame(update);
+
+      amplitudeRef.current += (targetAmplitudeRef.current - amplitudeRef.current) * 0.04;
+
+      program.uniforms.uTime.value = t * 0.001;
+      program.uniforms.uAmplitude.value = amplitudeRef.current;
+      renderer.render({ scene: mesh });
+    };
+    animateId = requestAnimationFrame(update);
+
+    return () => {
+      cancelAnimationFrame(animateId);
+      window.removeEventListener('resize', resize);
+      if (ctn && gl.canvas.parentNode === ctn) ctn.removeChild(gl.canvas);
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+    };
+  }, []);
+
+  const isActive = visible && isSpeaking;
+
+  return (
+    <motion.div
+      className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-b-xl"
+      initial={{ opacity: 0, y: '100%' }}
+      animate={{
+        opacity: isActive ? 1 : 0,
+        y: isActive ? '0%' : '60%',
+      }}
+      transition={{
+        opacity: {
+          duration: isActive ? 0.5 : 1.6,
+          ease: 'easeInOut',
+        },
+        y: {
+          duration: isActive ? 0.7 : 1.8,
+          ease: isActive
+            ? [0.22, 1, 0.36, 1]  // spring-like entry
+            : [0.0, 0, 0.6, 1],   // very slow start, barely accelerates — feels like melting down
+        },
+      }}
+    >
+      <div ref={ctnRef} className="w-full h-full absolute top-0 left-0" />
+    </motion.div>
+  );
+}
