@@ -5,7 +5,7 @@ import { getTextById } from "@/storage/text";
 import { Window } from "@/types/window";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { currentMonitor } from "@tauri-apps/api/window";
-import { CommandIcon, PlayIcon, SquareIcon } from "lucide-react";
+import { PlayIcon, SquareIcon } from "lucide-react";
 import { useState } from "react";
 
 const WINDOW_CONFIG = {
@@ -17,7 +17,7 @@ const WINDOW_CONFIG = {
 async function createPromptWindow(x: number): Promise<WebviewWindow> {
   return new WebviewWindow(Window.PROMPT, {
     url: "/",
-    title: "Prompeteer",
+    title: "Prompter",
     width: WINDOW_CONFIG.width,
     height: WINDOW_CONFIG.height,
     x,
@@ -29,6 +29,7 @@ async function createPromptWindow(x: number): Promise<WebviewWindow> {
     skipTaskbar: true,
     resizable: false,
     visible: false,
+    contentProtected: true,
   });
 }
 
@@ -44,7 +45,7 @@ async function getWindowPosition(): Promise<number | null> {
   return Math.round(screenX + (screenWidth - WINDOW_CONFIG.width) / 2);
 }
 
-export function PrompeteerButton() {
+export function PrompterButton() {
   const { selectedText } = useTextContext();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -83,24 +84,17 @@ export function PrompeteerButton() {
   const isDisabled = !selectedText && !isOpen;
 
   return (
-    <div className="flex items-center gap-3">
-      <span className="flex items-center gap-1 text-purple-500 text-xs cursor-default select-none">
-        <CommandIcon className="size-3" />
-        <span>+</span>
-        <kbd className="font-sans">T</kbd>
-      </span>
-      <Button
-        size="icon"
-        variant="outline"
-        onClick={() => isOpen ? closeWindow() : openWindow()}
-        disabled={isDisabled}
-        className={cn(isOpen ? "text-purple-500 border-purple-500/30" : "")}
-      >
-        {isOpen
-          ? <SquareIcon className="size-4" fill="currentColor" />
-          : <PlayIcon className="size-4" fill="currentColor" />
-        }
-      </Button>
-    </div>
+    <Button
+      size="icon"
+      variant="outline"
+      onClick={() => isOpen ? closeWindow() : openWindow()}
+      disabled={isDisabled}
+      className={cn(isOpen ? "text-purple-500 border-purple-500/30" : "")}
+    >
+      {isOpen
+        ? <SquareIcon className="size-4" fill="currentColor" />
+        : <PlayIcon className="size-4" fill="currentColor" />
+      }
+    </Button>
   );
 }

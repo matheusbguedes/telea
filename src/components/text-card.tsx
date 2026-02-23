@@ -66,14 +66,14 @@ export function TextCard({ ref, text, onSelect, onDelete }: TextCardProps) {
       >
         <div className="flex flex-col gap-1.5 flex-1 min-w-0">
           <div className="flex flex-col gap-0.5">
-            <h2 className="text-zinc-200 font-semibold truncate transition-colors duration-200 select-none cursor-default">
+            <h2 className="text-zinc-200 font-semibold truncate transition-colors duration-200 select-none">
               {text.title}
             </h2>
-            <p className="text-zinc-400 text-sm line-clamp-1 leading-snug select-none cursor-default">
+            <p className="text-zinc-400 text-sm line-clamp-1 leading-snug select-none">
               {text.content}
             </p>
           </div>
-          <time className="text-zinc-500 text-xs select-none cursor-default">
+          <time className="text-zinc-500 text-xs select-none">
             {format(text.createdAt, "d 'de' MMM '•' HH:mm", { locale: ptBR })}
           </time>
         </div>

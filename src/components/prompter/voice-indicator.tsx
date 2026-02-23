@@ -150,8 +150,6 @@ export default function VoiceIndicator({ isSpeaking, visible }: VoiceIndicatorPr
     const mesh = new Mesh(gl, { geometry, program });
     ctn.appendChild(gl.canvas);
 
-    gl.canvas.style.borderRadius = '0 0 0.75rem 0.75rem';
-
     const resize = () => {
       renderer.setSize(ctn.offsetWidth, ctn.offsetHeight);
       program.uniforms.uResolution.value = [ctn.offsetWidth, ctn.offsetHeight];
@@ -182,27 +180,29 @@ export default function VoiceIndicator({ isSpeaking, visible }: VoiceIndicatorPr
   const isActive = visible && isSpeaking;
 
   return (
-    <motion.div
-      className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-b-xl"
-      initial={{ opacity: 0, y: '100%' }}
-      animate={{
-        opacity: isActive ? 1 : 0,
-        y: isActive ? '0%' : '60%',
-      }}
-      transition={{
-        opacity: {
-          duration: isActive ? 0.5 : 1.6,
-          ease: 'easeInOut',
-        },
-        y: {
-          duration: isActive ? 0.7 : 1.8,
-          ease: isActive
-            ? [0.22, 1, 0.36, 1]  // spring-like entry
-            : [0.0, 0, 0.6, 1],   // very slow start, barely accelerates — feels like melting down
-        },
-      }}
-    >
-      <div ref={ctnRef} className="w-full h-full absolute top-0 left-0" />
-    </motion.div>
+    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-b-xl">
+      <motion.div
+        className="absolute inset-0"
+        initial={{ opacity: 0, y: '100%' }}
+        animate={{
+          opacity: isActive ? 1 : 0,
+          y: isActive ? '0%' : '60%',
+        }}
+        transition={{
+          opacity: {
+            duration: isActive ? 0.5 : 1.6,
+            ease: 'easeInOut',
+          },
+          y: {
+            duration: isActive ? 0.7 : 1.8,
+            ease: isActive
+              ? [0.22, 1, 0.36, 1]  // spring-like entry
+              : [0.0, 0, 0.6, 1],   // very slow start, barely accelerates — feels like melting down
+          },
+        }}
+      >
+        <div ref={ctnRef} className="w-full h-full absolute top-0 left-0" />
+      </motion.div>
+    </div>
   );
 }

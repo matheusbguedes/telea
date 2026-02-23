@@ -1,6 +1,8 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { motion, useAnimation } from "framer-motion";
+import { PauseIcon, PlayIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "../animate-ui/components/buttons/button";
 import { Countdown } from "./countdown";
 import VoiceIndicator from "./voice-indicator";
 
@@ -16,6 +18,7 @@ export default function Prompter() {
     const [isScrolling, setIsScrolling] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
+    const [isManuallyPaused, setIsManuallyPaused] = useState(false);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
@@ -131,7 +134,7 @@ export default function Prompter() {
     }, [isScrolling, content]);
 
     useEffect(() => {
-        if (!isScrolling || isPaused) return;
+        if (!isScrolling || isPaused || isManuallyPaused) return;
 
         if (isSpeaking) {
             const container = containerRef.current;
@@ -155,13 +158,41 @@ export default function Prompter() {
                 }
             }
         }
-    }, [isSpeaking, isScrolling, isPaused]);
+    }, [isSpeaking, isScrolling, isPaused, isManuallyPaused]);
 
     const handleMouseEnter = () => { setIsPaused(true); controls.stop(); };
     const handleMouseLeave = () => { if (isScrolling) setIsPaused(false); };
 
+    const handleToggleManualPause = () => {
+        if (!isScrolling) return;
+
+        if (isManuallyPaused) {
+            setIsManuallyPaused(false);
+            const container = containerRef.current;
+            if (!container) return;
+            const scrollHeight = container.scrollHeight - container.clientHeight;
+            const remainingDistance = scrollHeight - Math.abs(pausedAtRef.current);
+            const remainingDuration = remainingDistance / SCROLL_SPEED;
+            if (remainingDuration > 0) {
+                controls.start({ y: -scrollHeight, transition: { duration: remainingDuration, ease: "linear" } });
+            }
+        } else {
+            setIsManuallyPaused(true);
+            controls.stop();
+            const el = containerRef.current?.firstElementChild as HTMLElement | null;
+            if (el) {
+                const matrix = getComputedStyle(el).transform.match(/matrix.*\((.+)\)/);
+                if (matrix) {
+                    pausedAtRef.current = parseFloat(matrix[1].split(", ")[5] ?? "0");
+                }
+            }
+        }
+    };
+
     return (
-        <div className="w-screen h-screen relative flex items-start justify-center bg-transparent px-5">
+        <div
+            className="w-screen h-screen relative flex items-start justify-center bg-transparent px-5 group"
+        >
             <motion.div
                 key="prompter-window"
                 className="w-full h-full bg-black rounded-b-xl relative"
@@ -191,7 +222,19 @@ export default function Prompter() {
                         </p>
                     </motion.div>
                 </div>
+                {!showCountdown && (
+                    <div className="relative h-full bg-black/40 backdrop-blur-sm z-50 rounded-b-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <Button
+                            size="icon-sm"
+                            variant="outline"
+                            onClick={handleToggleManualPause}
+                            className="absolute bottom-2 left-2"
+                        >
+                            {isManuallyPaused ? <PlayIcon className="size-3" fill="currentColor" /> : <PauseIcon className="size-3" fill="currentColor" />}
+                        </Button>
+                    </div>
+                )}
             </motion.div>
-        </div>
+        </div >
     );
 }

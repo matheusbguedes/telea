@@ -56,6 +56,7 @@
             "core:window:allow-hide",
             "core:window:allow-show",
             "core:window:allow-destroy",
+            "core:window:allow-set-content-protected",
             "core:event:allow-emit",
             "core:event:allow-listen",
             "core:event:default"

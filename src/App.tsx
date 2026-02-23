@@ -1,6 +1,6 @@
 import "@/App.css";
-import { PrompeteerButton } from "@/components/prompeteer-button";
-import Prompeteer from "@/components/prompteer/prompeteer";
+import { PrompterButton } from "@/components/prompter-button";
+import Prompter from "@/components/prompter/prompter";
 import Aurora from "@/components/reactbits/aurora";
 import { TextEditor } from "@/components/text-editor";
 import { TextList } from "@/components/text-list";
@@ -10,7 +10,7 @@ import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 const currentWindow = getCurrentWebviewWindow();
 
 function App() {
-  if (currentWindow.label === Window.PROMPT) return <Prompeteer />;
+  if (currentWindow.label === Window.PROMPT) return <Prompter />;
 
   return (
     <div className="w-screen h-screen flex bg-black rounded-xl overflow-hidden">
@@ -19,7 +19,7 @@ function App() {
       <div className="w-full h-full flex flex-col gap-4 pt-12 pb-4 px-4 z-10">
         <header className="w-full flex items-center justify-between">
           <TextList />
-          <PrompeteerButton />
+          <PrompterButton />
         </header>
         <TextEditor />
       </div>
