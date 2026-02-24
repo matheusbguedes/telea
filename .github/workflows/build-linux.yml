@@ -1,0 +1,32 @@
+name: Build Linux AppImage
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Tauri
+        run: npm run tauri build
+
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-appimage
+          path: src-tauri/target/release/bundle/appimage/*.AppImage
