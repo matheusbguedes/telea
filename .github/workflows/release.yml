@@ -37,13 +37,14 @@ jobs:
             patchelf
 
       - uses: tauri-apps/tauri-action@v0
-        with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "v${{ github.ref_name }}"
-          releaseBody: "Release ${{ github.ref_name }}"
-          releaseDraft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "${{ github.ref_name }}"
+          releaseBody: "Release ${{ github.ref_name }}"
+          releaseDraft: false
+          prerelease: false
+          args: --verbose
