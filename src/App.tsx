@@ -7,13 +7,10 @@ import { TextList } from "@/components/text-list";
 import { Window } from "@/types/window";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { VersionBadge } from "./components/version-badge";
-import { useUpdater } from "./hooks/use-updater";
 
 const currentWindow = getCurrentWebviewWindow();
 
 function App() {
-  useUpdater();
-  
   if (currentWindow.label === Window.PROMPT) return <Prompter />;
 
   return (
