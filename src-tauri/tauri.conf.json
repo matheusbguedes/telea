@@ -32,6 +32,9 @@
           "identifier": "main-capability",
           "windows": ["main"],
           "permissions": [
+            "updater:default",
+            "updater:allow-check",
+            "updater:allow-download-and-install",
             "store:default",
             "core:window:allow-start-dragging",
             "core:window:allow-create",
@@ -84,6 +87,19 @@
       "minimumSystemVersion": "10.13",
       "files": {
         "Info.plist": "Info.plist"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://github.com/matheusbguedes/telea/releases/latest/download/latest.json"
+      ],
+      "dialog": false,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVEMjgwNUU2NDNCRTZBMzIKUldReWFyNUQ1Z1VvN2F5bXlzUFllQzRWK21QcXV2NnhJeHNPM1dkMFc2VjFNSWpJUHZ0VmlBSFAK",
+      "windows": {
+        "installMode": "passive"
       }
     }
   }

@@ -4,9 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
+    "dev": "npm run tauri dev",
+    "build": "TAURI_SIGNING_PRIVATE_KEY_PATH=~/.tauri/telea.key npm run tauri build",
     "tauri": "tauri"
   },
   "dependencies": {
@@ -14,6 +13,7 @@
     "@tauri-apps/plugin-opener": "^2",
     "@tauri-apps/plugin-process": "^2.3.1",
     "@tauri-apps/plugin-store": "^2.4.2",
+    "@tauri-apps/plugin-updater": "^2.10.0",
     "@types/node": "^25.2.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

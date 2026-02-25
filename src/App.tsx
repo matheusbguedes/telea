@@ -6,10 +6,14 @@ import { TextEditor } from "@/components/text-editor";
 import { TextList } from "@/components/text-list";
 import { Window } from "@/types/window";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { VersionBadge } from "./components/version-badge";
+import { useUpdater } from "./hooks/use-updater";
 
 const currentWindow = getCurrentWebviewWindow();
 
 function App() {
+  useUpdater();
+  
   if (currentWindow.label === Window.PROMPT) return <Prompter />;
 
   return (
@@ -19,6 +23,7 @@ function App() {
       <div className="w-full h-full flex flex-col gap-4 pt-12 pb-4 px-4 z-10">
         <header className="w-full flex items-center justify-between">
           <TextList />
+          <VersionBadge />
           <PrompterButton />
         </header>
         <TextEditor />
