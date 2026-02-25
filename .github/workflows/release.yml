@@ -16,6 +16,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install
+
       - uses: dtolnay/rust-toolchain@stable
 
       - uses: tauri-apps/tauri-action@v0
