@@ -21,11 +21,16 @@ export function useUpdater(): UseUpdaterReturn {
   const checkForUpdates = useCallback(async () => {
     setStatus('checking');
 
+    try {
     const update = await check();
 
-    if (update?.available) {
-      await downloadAndInstall(update);
-    } else {
+      if (update?.available) {
+        await downloadAndInstall(update);
+      } else {
+        setStatus('idle');
+      }
+    } catch (error) {
+      console.error(error);
       setStatus('idle');
     }
   }, [downloadAndInstall]);
