@@ -70,7 +70,7 @@ export function TextEditor() {
             <textarea
                 value={text?.content ?? ""}
                 onChange={(e) => handleChange("content", e.target.value)}
-                className="w-full h-full resize-none rounded-2xl bg-transparent text-white outline-none transition-colors duration-300 placeholder:text-zinc-500 border border-transparent hover:border-white/10 px-4 py-2"
+                className="w-full h-full resize-none rounded-2xl bg-transparent text-white outline-none transition-colors duration-300 placeholder:text-zinc-500 border border-transparent hover:border-white/10 px-4 py-2 hidden-scrollbar"
             />
         </div>
     );

@@ -6,11 +6,11 @@ fn greet(name: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .setup(|app| {
+        .setup(|_app| {
             #[cfg(target_os = "macos")]
             {
                 use tauri::ActivationPolicy;
-                app.set_activation_policy(ActivationPolicy::Regular);
+                _app.set_activation_policy(ActivationPolicy::Regular);
             }
             Ok(())
         })

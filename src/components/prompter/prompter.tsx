@@ -207,7 +207,7 @@ export default function Prompter() {
                 <div className="absolute top-0 -right-5 w-5 h-5 overflow-hidden pointer-events-none z-50">
                     <div className="absolute top-0 left-0 w-10 h-10 rounded-full" style={{ boxShadow: "0 0 0 100px black" }} />
                 </div>
-                <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-black to-transparent pointer-events-none z-10" />
+                <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-black to-transparent pointer-events-none z-50" />
                 <VoiceIndicator isSpeaking={isSpeaking} visible={!showCountdown} />
                 {showCountdown && <Countdown onComplete={handleCountdownComplete} />}
                 <div
