@@ -4,9 +4,12 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "npm run tauri dev",
-    "build": "TAURI_SIGNING_PRIVATE_KEY_PATH=~/.tauri/telea.key npm run tauri build",
-    "tauri": "tauri"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

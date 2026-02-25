@@ -36,20 +36,10 @@ npm install
 3. Inicie o ambiente de desenvolvimento:
 
 ```bash
-npm run dev
+npm run tauri:dev
 ```
 
 O projeto estará pronto e em execução no modo de desenvolvimento.
-
-### 🏗️ Build de Produção
-
-Para gerar um build de produção:
-
-```bash
-npm run build
-```
-
-O executável será gerado em `src-tauri/target/release/bundle/`.
 
 ## 📦 Sistema de Auto-Update
 
@@ -157,26 +147,6 @@ Agora, toda vez que um usuário abrir o app:
    - `"Download finished"` - Download completo
    - `"Update installed, relaunching..."` - Instalando
 
-### 📁 Estrutura do Projeto
-
-```
-telea/
-├── src/                          # Frontend (React + TypeScript)
-│   ├── components/               # Componentes React
-│   ├── hooks/                    # Hooks customizados
-│   │   └── use-updater.ts       # Hook de auto-update
-│   └── App.tsx                   # Componente principal
-├── src-tauri/                    # Backend (Rust + Tauri)
-│   ├── src/
-│   │   └── lib.rs               # Configuração principal
-│   ├── Cargo.toml               # Dependências Rust
-│   └── tauri.conf.json          # Configuração Tauri
-├── .github/workflows/            # CI/CD
-│   └── release.yml              # Workflow de release
-├── bump-version.sh              # Script auxiliar
-└── README.md                    # Este arquivo
-```
-
 ### 🔧 Scripts Disponíveis
 
 ```bash
@@ -184,17 +154,6 @@ npm run dev          # Inicia ambiente de desenvolvimento
 npm run build        # Build completo com assinatura
 npm run tauri        # CLI do Tauri
 ```
-
-### 🛡️ Segurança
-
-O sistema de updates utiliza:
-
-- ✅ Assinatura criptográfica (minisign)
-- ✅ Verificação de integridade dos binários
-- ✅ HTTPS para downloads
-- ✅ Validação de versão
-
-Os updates só são instalados se a assinatura for válida, garantindo que apenas binários oficiais sejam executados.
 
 ## 🛠️ Construído com
 
@@ -205,12 +164,6 @@ Os updates só são instalados se a assinatura for válida, garantindo que apena
 - [Tailwind CSS](https://tailwindcss.com/) - Framework CSS utility-first
 - [Framer Motion](https://www.framer.com/motion/) - Biblioteca de animações
 - [Rust](https://www.rust-lang.org/) - Linguagem de programação do backend
-
-## 📚 Documentação Adicional
-
-- **Variáveis de Ambiente:** Consulte `.env.example`
-- **Workflow CI/CD:** Veja `.github/workflows/release.yml`
-- **Configuração Tauri:** Veja `src-tauri/tauri.conf.json`
 
 ### Erro ao fazer build
 

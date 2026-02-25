@@ -11,7 +11,7 @@ export function VersionBadge() {
     return (
         <div className="w-fit p-2 bg-purple-500/10 rounded-xl border border-purple-500/30">
             <p className="text-purple-500 text-xs text-center">
-                v {version}
+                v{version}
             </p>
         </div>
     );
