@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "telea",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "identifier": "com.matheusborges.telea",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -100,7 +100,7 @@
         "https://github.com/matheusbguedes/telea/releases/latest/download/latest.json"
       ],
       "dialog": false,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI5QkZFMDdFNEJEMTA0MDIKUldRQ0JORkxmdUMvS2FQQkRyUzZRMk5UOWg5dlM5UXR4T2hkZzN0ZE1IOUFENlBHV1dld05oZWsK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5cnpUL2hLMzl2bk5UYmJzOElQZzhSckpDNG9FNEcwSVovT2k4QW45bTdPZ0FBQkFBQUFBQUFBQUFBQUlBQUFBQThsczdrdjBzZzZOQzRDZXU4RE1xMVg2QnY2U1NuMU15VW5RYXRzOTV1SUlEeDQzNVVCbml3OU5SUDczSVdjY0xsODYrc1NNTzhNOHF6d2FET3RaZCtLcEZYeTBLRGZiWkVFMTVxcFIyNFJGRE1ibzJUUjdpUTJqcFJlc2cyMm9hRGtidWRqbDE5dU09Cg==",
       "windows": {
         "installMode": "passive"
       }
