@@ -6,6 +6,7 @@ import { TextEditor } from "@/components/text-editor";
 import { TextList } from "@/components/text-list";
 import { Window } from "@/types/window";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { Authorizer } from "./components/authorizer";
 import { VersionBadge } from "./components/version-badge";
 
 const currentWindow = getCurrentWebviewWindow();
@@ -25,6 +26,7 @@ function App() {
         </header>
         <TextEditor />
       </div>
+      <Authorizer />
     </div>
   );
 }

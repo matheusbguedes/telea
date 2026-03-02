@@ -1,8 +1,8 @@
-import { getVersion } from '@tauri-apps/api/app';
-import { useEffect, useState } from 'react';
 import { useUpdater } from '@/hooks/use-updater';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Loader, Download, Tag } from 'lucide-react';
+import { getVersion } from '@tauri-apps/api/app';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Download, Loader, Tag } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 type Status = 'idle' | 'checking' | 'downloading';
 
@@ -42,7 +42,7 @@ export function VersionBadge() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.2 }}
-          className="flex items-center gap-1.5 text-purple-400/70 text-xs select-none"
+          className="flex items-center gap-1.5 text-purple-400/70 text-xs select-none cursor-default"
         >
           {config.label(version)}
           {config.icon}

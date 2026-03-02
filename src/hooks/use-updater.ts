@@ -1,8 +1,8 @@
-import { check, type Update } from '@tauri-apps/plugin-updater';
-import { relaunch } from '@tauri-apps/plugin-process';
-import { useCallback, useEffect, useState } from 'react';
+import { relaunch } from "@tauri-apps/plugin-process";
+import { check, type Update } from "@tauri-apps/plugin-updater";
+import { useCallback, useEffect, useState } from "react";
 
-type UpdaterStatus = 'idle' | 'checking' | 'downloading';
+type UpdaterStatus = "idle" | "checking" | "downloading";
 
 interface UseUpdaterReturn {
   status: UpdaterStatus;
@@ -10,28 +10,28 @@ interface UseUpdaterReturn {
 }
 
 export function useUpdater(): UseUpdaterReturn {
-  const [status, setStatus] = useState<UpdaterStatus>('idle');
+  const [status, setStatus] = useState<UpdaterStatus>("idle");
 
   const downloadAndInstall = useCallback(async (update: Update) => {
-    setStatus('downloading');
+    setStatus("downloading");
     await update.downloadAndInstall();
     await relaunch();
   }, []);
 
   const checkForUpdates = useCallback(async () => {
-    setStatus('checking');
+    setStatus("checking");
 
     try {
-    const update = await check();
+      const update = await check();
 
       if (update?.available) {
         await downloadAndInstall(update);
       } else {
-        setStatus('idle');
+        setStatus("idle");
       }
     } catch (error) {
       console.error(error);
-      setStatus('idle');
+      setStatus("idle");
     }
   }, [downloadAndInstall]);
 

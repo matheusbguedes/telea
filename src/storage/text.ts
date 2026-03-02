@@ -14,7 +14,7 @@ export async function getTextById(id: string): Promise<Text | null> {
 
 export async function createText(
   title: string,
-  content: string
+  content: string,
 ): Promise<Text> {
   const texts = await getTexts();
 
@@ -47,12 +47,12 @@ export async function updateText({
     texts.map((text) =>
       text.id === id
         ? {
-          ...text,
-          ...(title !== undefined && { title }),
-          ...(content !== undefined && { content }),
-        }
-        : text
-    )
+            ...text,
+            ...(title !== undefined && { title }),
+            ...(content !== undefined && { content }),
+          }
+        : text,
+    ),
   );
 
   await store.save();
@@ -62,7 +62,7 @@ export async function deleteText(id: string): Promise<void> {
   const texts = await getTexts();
   await store.set(
     "texts",
-    texts.filter((text) => text.id !== id)
+    texts.filter((text) => text.id !== id),
   );
 
   await store.save();
