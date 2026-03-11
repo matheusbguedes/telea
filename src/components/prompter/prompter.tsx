@@ -6,7 +6,7 @@ import { Button } from "../animate-ui/components/buttons/button";
 import { Countdown } from "./countdown";
 import VoiceIndicator from "./voice-indicator";
 
-const SCROLL_SPEED = 25;
+const SCROLL_SPEED = 22;
 const VOICE_THRESHOLD = 45;
 const VOICE_HISTORY_SIZE = 10;
 const VOICE_FREQ_MIN = 85;
@@ -19,6 +19,7 @@ export default function Prompter() {
     const [isPaused, setIsPaused] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isManuallyPaused, setIsManuallyPaused] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
@@ -29,6 +30,14 @@ export default function Prompter() {
     const animationFrameRef = useRef<number | null>(null);
     const voiceHistoryRef = useRef<number[]>([]);
     const pausedAtRef = useRef<number>(0);
+    const isSpeakingRef = useRef<boolean>(false);
+    const isManuallyPausedRef = useRef<boolean>(false);
+    const isScrollingRef = useRef<boolean>(false);
+
+    // Keep refs in sync with state for use inside event handlers
+    useEffect(() => { isSpeakingRef.current = isSpeaking; }, [isSpeaking]);
+    useEffect(() => { isManuallyPausedRef.current = isManuallyPaused; }, [isManuallyPaused]);
+    useEffect(() => { isScrollingRef.current = isScrolling; }, [isScrolling]);
 
     const detectVoice = () => {
         if (!analyserRef.current) return;
@@ -104,18 +113,29 @@ export default function Prompter() {
         const appWindow = getCurrentWindow();
 
         const setupListeners = async () => {
-            const unlisten = await appWindow.listen<{ content: string }>(
+            const unlistenContent = await appWindow.listen<{ content: string }>(
                 "content-loaded",
                 (event) => setContent(event.payload.content)
             );
+
+            const unlistenClose = await appWindow.listen("close-prompter", async () => {
+                setIsClosing(true);
+                setTimeout(() => appWindow.close(), 1000);
+            });
+
             await appWindow.emit("prompter-ready", {});
-            return unlisten;
+            return { unlistenContent, unlistenClose };
         };
 
         const unlistenPromise = setupListeners();
         setTimeout(() => appWindow.show(), 15);
 
-        return () => { unlistenPromise.then((u) => u()); };
+        return () => {
+            unlistenPromise.then(({ unlistenContent, unlistenClose }) => {
+                unlistenContent();
+                unlistenClose();
+            });
+        };
     }, []);
 
     const handleCountdownComplete = () => {
@@ -160,32 +180,74 @@ export default function Prompter() {
         }
     }, [isSpeaking, isScrolling, isPaused, isManuallyPaused]);
 
-    const handleMouseEnter = () => { setIsPaused(true); controls.stop(); };
-    const handleMouseLeave = () => { if (isScrolling) setIsPaused(false); };
+    const getCurrentY = () => {
+        const el = containerRef.current?.firstElementChild as HTMLElement | null;
+        if (!el) return pausedAtRef.current;
+        const matrix = getComputedStyle(el).transform.match(/matrix.*\((.+)\)/);
+        if (matrix) return parseFloat(matrix[1].split(", ")[5] ?? "0");
+        return pausedAtRef.current;
+    };
+
+    const resumeFrom = (yPosition: number) => {
+        const container = containerRef.current;
+        if (!container) return;
+        const scrollHeight = container.scrollHeight - container.clientHeight;
+        const remainingDistance = scrollHeight - Math.abs(yPosition);
+        const remainingDuration = remainingDistance / SCROLL_SPEED;
+        if (remainingDuration > 0) {
+            controls.start({ y: -scrollHeight, transition: { duration: remainingDuration, ease: "linear" } });
+        }
+    };
+
+    const handleMouseEnter = () => {
+        setIsPaused(true);
+        controls.stop();
+    };
+
+    const handleMouseLeave = () => {
+        if (!isScrollingRef.current) return;
+        setIsPaused(false);
+        if (!isManuallyPausedRef.current && isSpeakingRef.current) {
+            const currentY = getCurrentY();
+            pausedAtRef.current = currentY;
+            resumeFrom(currentY);
+        }
+    };
+
+    const handleWheel = (e: React.WheelEvent) => {
+        if (!isScrollingRef.current) return;
+
+        controls.stop();
+
+        const container = containerRef.current;
+        if (!container) return;
+
+        const scrollHeight = container.scrollHeight - container.clientHeight;
+        const currentY = getCurrentY();
+        const WHEEL_SENSITIVITY = 0.8;
+        const newY = Math.min(0, Math.max(-scrollHeight, currentY - e.deltaY * WHEEL_SENSITIVITY));
+
+        pausedAtRef.current = newY;
+        controls.set({ y: newY });
+
+        // Resume auto-scroll if speaking and not manually paused
+        if (!isManuallyPausedRef.current && isSpeakingRef.current) {
+            resumeFrom(newY);
+        }
+    };
 
     const handleToggleManualPause = () => {
         if (!isScrolling) return;
 
         if (isManuallyPaused) {
             setIsManuallyPaused(false);
-            const container = containerRef.current;
-            if (!container) return;
-            const scrollHeight = container.scrollHeight - container.clientHeight;
-            const remainingDistance = scrollHeight - Math.abs(pausedAtRef.current);
-            const remainingDuration = remainingDistance / SCROLL_SPEED;
-            if (remainingDuration > 0) {
-                controls.start({ y: -scrollHeight, transition: { duration: remainingDuration, ease: "linear" } });
-            }
+            const currentY = getCurrentY();
+            pausedAtRef.current = currentY;
+            resumeFrom(currentY);
         } else {
             setIsManuallyPaused(true);
             controls.stop();
-            const el = containerRef.current?.firstElementChild as HTMLElement | null;
-            if (el) {
-                const matrix = getComputedStyle(el).transform.match(/matrix.*\((.+)\)/);
-                if (matrix) {
-                    pausedAtRef.current = parseFloat(matrix[1].split(", ")[5] ?? "0");
-                }
-            }
+            pausedAtRef.current = getCurrentY();
         }
     };
 
@@ -195,11 +257,52 @@ export default function Prompter() {
         >
             <motion.div
                 key="prompter-window"
-                className="w-full h-full bg-black rounded-b-xl relative"
-                style={{ willChange: "transform, opacity" }}
-                initial={{ y: "-100%", opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, ease: [0.43, 0.13, 0.23, 0.96], delay: 0.05 }}
+                className="w-full h-full bg-black relative rounded-b-2xl"
+                style={{ willChange: "transform, opacity", transformOrigin: "top center" }}
+                initial={{
+                    scaleY: 0,
+                    scaleX: 0,
+                    opacity: 0,
+                }}
+                animate={isClosing ? {
+                    scaleY: 0,
+                    scaleX: 0,
+                    opacity: 0
+                } : {
+                    scaleY: 1,
+                    scaleX: 1,
+                    opacity: 1
+                }}
+                transition={{
+                    scaleY: isClosing ? {
+                        type: "tween",
+                        duration: 0.45,
+                        ease: [0.4, 0, 0.2, 1],
+                        delay: 0.5
+                    } : {
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 24,
+                        mass: 0.8,
+                        delay: 0.05
+                    },
+                    scaleX: isClosing ? {
+                        type: "tween",
+                        duration: 0.35,
+                        ease: [0.4, 0, 0.2, 1],
+                        delay: 0.5
+                    } : {
+                        type: "spring",
+                        stiffness: 320,
+                        damping: 24,
+                        mass: 0.7,
+                        delay: 0.05
+                    },
+                    opacity: {
+                        duration: isClosing ? 0.3 : 0.15,
+                        delay: isClosing ? 0.5 : 0.05
+                    },
+                }}
             >
                 <div className="absolute top-0 -left-5 w-5 h-5 overflow-hidden pointer-events-none z-50">
                     <div className="absolute top-0 right-0 w-10 h-10 rounded-full" style={{ boxShadow: "0 0 0 100px black" }} />
@@ -207,34 +310,45 @@ export default function Prompter() {
                 <div className="absolute top-0 -right-5 w-5 h-5 overflow-hidden pointer-events-none z-50">
                     <div className="absolute top-0 left-0 w-10 h-10 rounded-full" style={{ boxShadow: "0 0 0 100px black" }} />
                 </div>
-                <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-black to-transparent pointer-events-none z-50" />
+                <div className="absolute top-0 left-0 right-0 h-[72px] z-50" style={{ background: 'linear-gradient(to bottom, black 0%, black 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, transparent 100%)' }} />
                 <VoiceIndicator isSpeaking={isSpeaking} visible={!showCountdown} />
                 {showCountdown && <Countdown onComplete={handleCountdownComplete} />}
                 <div
                     ref={containerRef}
-                    className="w-full h-full absolute top-0 left-0 overflow-hidden px-6 py-2 rounded-b-xl z-10"
+                    className="w-full h-[calc(100%-32px)] absolute bottom-0 left-0 overflow-hidden px-6 pt-5 pb-2 rounded-b-2xl z-10"
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
+                    onWheel={handleWheel}
                 >
-                    <motion.div animate={controls} initial={{ y: 0 }}>
+                    <motion.div
+                        animate={isClosing ? { opacity: 0 } : controls}
+                        initial={{ opacity: 1 }}
+                        transition={isClosing ? {
+                            opacity: {
+                                duration: 0.3,
+                                ease: "easeIn",
+                                delay: 0
+                            }
+                        } : {}}
+                    >
                         <p className="text-white text-xl text-center text-balance font-medium leading-normal select-none cursor-default">
                             {content}
                         </p>
                     </motion.div>
                 </div>
                 {!showCountdown && (
-                    <div className="relative h-full bg-black/40 backdrop-blur-sm z-50 rounded-b-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-0 left-0 right-0 h-14 flex items-end justify-between p-2 rounded-b-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
                         <Button
                             size="icon-sm"
                             variant="outline"
                             onClick={handleToggleManualPause}
-                            className="absolute bottom-2 left-2"
+                            className="pointer-events-auto"
                         >
                             {isManuallyPaused ? <PlayIcon className="size-3" fill="currentColor" /> : <PauseIcon className="size-3" fill="currentColor" />}
                         </Button>
                     </div>
                 )}
             </motion.div>
-        </div >
+        </div>
     );
 }

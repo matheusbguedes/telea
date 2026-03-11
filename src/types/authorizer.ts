@@ -1,4 +1,5 @@
-export type Authorizer = {
-  deviceId: string;
-  accessKey: string;
+export type Device = {
+  id: string;
+  name?: string;
+  licenseKey: string;
 };

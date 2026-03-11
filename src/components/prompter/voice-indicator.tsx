@@ -180,7 +180,7 @@ export default function VoiceIndicator({ isSpeaking, visible }: VoiceIndicatorPr
   const isActive = visible && isSpeaking;
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-b-xl">
+    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-b-2xl">
       <motion.div
         className="absolute inset-0"
         initial={{ opacity: 0, y: '100%' }}

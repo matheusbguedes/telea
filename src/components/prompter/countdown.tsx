@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface CountdownProps {
     initialValue?: number;
@@ -7,42 +7,47 @@ interface CountdownProps {
 }
 
 export function Countdown({ initialValue = 3, onComplete }: CountdownProps) {
-    const [countdown, setCountdown] = useState<number | null>(initialValue);
+    const [countdown, setCountdown] = useState<number>(initialValue);
+    const [visible, setVisible] = useState(true);
+    const onCompleteRef = useRef(onComplete);
 
     useEffect(() => {
-        if (countdown === null || countdown === 0) return;
+        onCompleteRef.current = onComplete;
+    }, [onComplete]);
+
+    useEffect(() => {
+        if (countdown <= 0) return;
 
         const timer = setTimeout(() => {
             if (countdown > 1) {
-                setCountdown(countdown - 1);
+                setCountdown((c) => c - 1);
             } else {
-                setCountdown(null);
-                onComplete();
+                setVisible(false);
             }
         }, 1000);
 
         return () => clearTimeout(timer);
-    }, [countdown, onComplete]);
+    }, [countdown]);
 
     return (
-        <AnimatePresence>
-            {countdown && (
+        <AnimatePresence onExitComplete={() => onCompleteRef.current()}>
+            {visible && (
                 <motion.div
-                    className="absolute inset-0 flex items-center justify-center z-50 bg-black backdrop-blur-xl rounded-b-xl"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    className="absolute inset-0 flex items-center justify-center pt-5 z-50 bg-black backdrop-blur-xl rounded-b-2xl"
                     exit={{ opacity: 0 }}
+                    transition={{ duration: 0.4 }}
                 >
-                    <motion.div
-                        key={countdown}
-                        initial={{ scale: 0.5, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 1.5, opacity: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="text-purple-500 text-3xl font-bold select-none cursor-default"
-                    >
-                        {countdown}
-                    </motion.div>
+                    <AnimatePresence mode="popLayout">
+                        <motion.div
+                            key={countdown}
+                            initial={{ scale: 0.4, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.4 }}
+                            className="text-purple-500 text-4xl font-boldselect-none cursor-default"
+                        >
+                            {countdown}
+                        </motion.div>
+                    </AnimatePresence>
                 </motion.div>
             )}
         </AnimatePresence>

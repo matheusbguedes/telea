@@ -3,15 +3,16 @@ import { useTextContext } from "@/contexts/text-context";
 import { cn } from "@/lib/utils";
 import { getTextById } from "@/storage/text";
 import { Window } from "@/types/window";
+import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { currentMonitor } from "@tauri-apps/api/window";
 import { PlayIcon, SquareIcon } from "lucide-react";
 import { useState } from "react";
 
 const WINDOW_CONFIG = {
-  width: 325,
-  height: 80,
-  y: 28,
+  width: 380,
+  height: 125,
+  y: 0,
 } as const;
 
 async function createPromptWindow(x: number): Promise<WebviewWindow> {
@@ -29,7 +30,8 @@ async function createPromptWindow(x: number): Promise<WebviewWindow> {
     skipTaskbar: true,
     resizable: false,
     visible: false,
-    contentProtected: true,
+    shadow: false,
+    contentProtected: true
   });
 }
 
@@ -60,7 +62,15 @@ export function PrompterButton() {
     const window = await createPromptWindow(x);
     setWindowRef(window);
 
-    await window.once("tauri://created", () => setIsOpen(true));
+    await window.once("tauri://created", async () => {
+      setIsOpen(true);
+
+      try {
+        await invoke("set_window_above_menubar", { label: Window.PROMPT });
+      } catch (error) {
+        console.error("Failed to set window above menubar:", error);
+      }
+    });
 
     const unlistenReady = await window.listen("prompter-ready", async () => {
       const text = await getTextById(selectedText.id);
@@ -76,9 +86,7 @@ export function PrompterButton() {
   };
 
   const closeWindow = async () => {
-    await windowRef?.close();
-    setIsOpen(false);
-    setWindowRef(null);
+    await windowRef?.emit("close-prompter", {});
   };
 
   const isDisabled = !selectedText && !isOpen;
