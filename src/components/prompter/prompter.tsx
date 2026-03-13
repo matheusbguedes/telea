@@ -1,4 +1,6 @@
+import { cn } from "@/lib/utils";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { platform as getPlatform } from "@tauri-apps/plugin-os";
 import { motion, useAnimation } from "framer-motion";
 import { PauseIcon, PlayIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -13,6 +15,8 @@ const VOICE_FREQ_MIN = 85;
 const VOICE_FREQ_MAX = 2000;
 
 export default function Prompter() {
+    const platform = getPlatform().toUpperCase();
+
     const [content, setContent] = useState<string>("");
     const [showCountdown, setShowCountdown] = useState(true);
     const [isScrolling, setIsScrolling] = useState(false);
@@ -310,12 +314,12 @@ export default function Prompter() {
                 <div className="absolute top-0 -right-5 w-5 h-5 overflow-hidden pointer-events-none z-50">
                     <div className="absolute top-0 left-0 w-10 h-10 rounded-full" style={{ boxShadow: "0 0 0 100px black" }} />
                 </div>
-                <div className="absolute top-0 left-0 right-0 h-[72px] z-50" style={{ background: 'linear-gradient(to bottom, black 0%, black 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, transparent 100%)' }} />
+                <div className={cn("absolute top-0 left-0 right-0 z-50", platform === "MACOS" ? "h-[72px]" : "h-10")} style={{ background: 'linear-gradient(to bottom, black 0%, black 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, transparent 100%)' }} />
                 <VoiceIndicator isSpeaking={isSpeaking} visible={!showCountdown} />
                 {showCountdown && <Countdown onComplete={handleCountdownComplete} />}
                 <div
                     ref={containerRef}
-                    className="w-full h-[calc(100%-32px)] absolute bottom-0 left-0 overflow-hidden px-6 pt-5 pb-2 rounded-b-2xl z-10"
+                    className={cn("w-full absolute bottom-0 left-0 overflow-hidden px-6 pt-5 pb-2 rounded-b-2xl z-10", platform === "MACOS" ? "h-[calc(100%-32px)]" : "h-full")}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                     onWheel={handleWheel}

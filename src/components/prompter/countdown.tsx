@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+import { platform as getPlatform } from "@tauri-apps/plugin-os";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
@@ -7,6 +9,7 @@ interface CountdownProps {
 }
 
 export function Countdown({ initialValue = 3, onComplete }: CountdownProps) {
+    const platform = getPlatform().toUpperCase();
     const [countdown, setCountdown] = useState<number>(initialValue);
     const [visible, setVisible] = useState(true);
     const onCompleteRef = useRef(onComplete);
@@ -33,7 +36,7 @@ export function Countdown({ initialValue = 3, onComplete }: CountdownProps) {
         <AnimatePresence onExitComplete={() => onCompleteRef.current()}>
             {visible && (
                 <motion.div
-                    className="absolute inset-0 flex items-center justify-center pt-5 z-50 bg-black backdrop-blur-xl rounded-b-2xl"
+                    className={cn("absolute inset-0 flex items-center justify-center z-50 bg-black backdrop-blur-xl rounded-b-2xl", platform === "MACOS" && "pt-5")}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.4 }}
                 >
@@ -43,7 +46,7 @@ export function Countdown({ initialValue = 3, onComplete }: CountdownProps) {
                             initial={{ scale: 0.4, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ duration: 0.4 }}
-                            className="text-purple-500 text-4xl font-boldselect-none cursor-default"
+                            className="text-purple-500 text-4xl font-bold select-none cursor-default"
                         >
                             {countdown}
                         </motion.div>

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { getDevice, setDevice } from "@/storage/authorizer";
+import { getDevice, setDevice } from "@/storage/device";
 import { fetch } from "@tauri-apps/plugin-http";
 import { platform as getPlatform } from "@tauri-apps/plugin-os";
 import { AnimatePresence, motion } from "framer-motion";
