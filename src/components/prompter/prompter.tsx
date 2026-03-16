@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { platform as getPlatform } from "@tauri-apps/plugin-os";
 import { motion, useAnimation } from "framer-motion";
-import { PauseIcon, PlayIcon } from "lucide-react";
+import { ArrowUpIcon, PauseIcon, PlayIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../animate-ui/components/buttons/button";
 import { Countdown } from "./countdown";
@@ -37,6 +37,7 @@ export default function Prompter() {
     const isSpeakingRef = useRef<boolean>(false);
     const isManuallyPausedRef = useRef<boolean>(false);
     const isScrollingRef = useRef<boolean>(false);
+    const isResettingToTopRef = useRef<boolean>(false);
 
     // Keep refs in sync with state for use inside event handlers
     useEffect(() => { isSpeakingRef.current = isSpeaking; }, [isSpeaking]);
@@ -158,7 +159,7 @@ export default function Prompter() {
     }, [isScrolling, content]);
 
     useEffect(() => {
-        if (!isScrolling || isPaused || isManuallyPaused) return;
+        if (!isScrolling || isPaused || isManuallyPaused || isResettingToTopRef.current) return;
 
         if (isSpeaking) {
             const container = containerRef.current;
@@ -255,6 +256,24 @@ export default function Prompter() {
         }
     };
 
+    const handleScrollUp = () => {
+        if (!isScrolling) return;
+        isResettingToTopRef.current = true;
+        controls.stop();
+        pausedAtRef.current = 0;
+        controls
+            .start({ y: 0, transition: { duration: 0.3, ease: "easeIn" } })
+            .then(() => {
+                isResettingToTopRef.current = false;
+                if (!isManuallyPausedRef.current && isSpeakingRef.current) {
+                    resumeFrom(0);
+                }
+            })
+            .catch(() => {
+                isResettingToTopRef.current = false;
+            });
+    };
+
     return (
         <div
             className="w-screen h-screen relative flex items-start justify-center bg-transparent px-5 group"
@@ -349,6 +368,14 @@ export default function Prompter() {
                             className="pointer-events-auto"
                         >
                             {isManuallyPaused ? <PlayIcon className="size-3" fill="currentColor" /> : <PauseIcon className="size-3" fill="currentColor" />}
+                        </Button>
+                        <Button
+                            size="icon-sm"
+                            variant="outline"
+                            onClick={handleScrollUp}
+                            className="pointer-events-auto"
+                        >
+                            <ArrowUpIcon className="size-3" />
                         </Button>
                     </div>
                 )}
