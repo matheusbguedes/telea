@@ -108,8 +108,8 @@
       "entitlements": "entitlements.plist",
       "exceptionDomain": null,
       "frameworks": [],
-      "providerShortName": null,
-      "signingIdentity": null,
+      "providerShortName": "49D5C7N239",
+      "signingIdentity": "Developer ID Application: Matheus Borges Guedes (49D5C7N239)",
       "minimumSystemVersion": "10.13",
       "files": {
         "Info.plist": "Info.plist"
