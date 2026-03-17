@@ -80,11 +80,6 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }} --verbose
 
-      - name: Staple DMG
-        if: matrix.platform == 'macos-latest'
-        run: |
-          xcrun stapler staple src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
-
       - name: Cleanup keychain
         if: matrix.platform == 'macos-latest' && always()
         run: |
