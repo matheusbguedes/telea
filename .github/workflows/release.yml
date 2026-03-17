@@ -10,7 +10,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+          - platform: macos-latest
+            args: --target aarch64-apple-darwin
+            name: macos-arm64
+          - platform: macos-latest
+            args: --target x86_64-apple-darwin
+            name: macos-x86_64
+          - platform: ubuntu-latest
+            args: ""
+            name: linux
+          - platform: windows-latest
+            args: ""
+            name: windows
 
     runs-on: ${{ matrix.platform }}
 
@@ -25,6 +37,10 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
+      - name: Add macOS targets
+        if: matrix.platform == 'macos-latest'
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+
       - name: Install Linux dependencies
         if: matrix.platform == 'ubuntu-latest'
         run: |
@@ -36,117 +52,23 @@ jobs:
             librsvg2-dev \
             patchelf
 
-      - name: Import Apple Certificate (macOS)
+      - name: Import Apple Certificate
         if: matrix.platform == 'macos-latest'
         env:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
         run: |
-          # Verificar se os secrets existem
-          if [ -z "$APPLE_CERTIFICATE" ]; then
-            echo "❌ ERRO: Secret APPLE_CERTIFICATE não configurado!"
-            echo "Por favor, adicione o secret em: https://github.com/${{ github.repository }}/settings/secrets/actions"
-            exit 1
-          fi
-          
-          if [ -z "$APPLE_CERTIFICATE_PASSWORD" ]; then
-            echo "❌ ERRO: Secret APPLE_CERTIFICATE_PASSWORD não configurado!"
-            exit 1
-          fi
-
-          echo "✅ Secrets encontrados, iniciando importação do certificado..."
-          
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           CERTIFICATE_PATH=$RUNNER_TEMP/certificate.p12
 
-          echo "📦 Decodificando certificado..."
           echo -n "$APPLE_CERTIFICATE" | base64 --decode -o $CERTIFICATE_PATH
-          
-          # Verificar se o arquivo foi criado
-          if [ ! -f "$CERTIFICATE_PATH" ]; then
-            echo "❌ ERRO: Falha ao decodificar certificado!"
-            exit 1
-          fi
-          
-          ls -lh $CERTIFICATE_PATH
-          echo "✅ Certificado decodificado com sucesso"
-
-          echo "🔐 Criando keychain..."
           security create-keychain -p actions $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p actions $KEYCHAIN_PATH
-          echo "✅ Keychain criado"
-
-          echo "📥 Importando certificado para o keychain..."
           security import $CERTIFICATE_PATH -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          echo "✅ Certificado importado"
-          
-          echo "🔗 Configurando keychains..."
           security list-keychain -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | sed s/\"//g)
           security default-keychain -s $KEYCHAIN_PATH
-          echo "✅ Keychain configurado como padrão"
-
-          echo "🔓 Configurando ACL..."
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k actions $KEYCHAIN_PATH
-          echo "✅ ACL configurado"
-          
-          echo ""
-          echo "🔍 Identidades de assinatura disponíveis:"
-          security find-identity -v -p codesigning $KEYCHAIN_PATH
-          
-          echo ""
-          echo "🔍 Verificando em todos os keychains:"
-          security find-identity -v -p codesigning
-          
-          # Verificar se a identidade foi encontrada
-          if security find-identity -v -p codesigning | grep -q "Developer ID Application"; then
-            echo "✅ Identidade Developer ID Application encontrada!"
-          else
-            echo "❌ ERRO: Identidade Developer ID Application NÃO encontrada!"
-            echo "Isso indica que o certificado pode estar incorreto ou corrompido."
-            exit 1
-          fi
-
-      - name: Validate Apple Notarization Credentials (macOS)
-        if: matrix.platform == 'macos-latest'
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          echo "🔍 Validando credenciais de notarização da Apple..."
-          
-          if [ -z "$APPLE_ID" ]; then
-            echo "❌ ERRO: Secret APPLE_ID não está configurado!"
-            echo "Configure em: https://github.com/${{ github.repository }}/settings/secrets/actions"
-            exit 1
-          fi
-          
-          if [ -z "$APPLE_PASSWORD" ]; then
-            echo "❌ ERRO: Secret APPLE_PASSWORD não está configurado!"
-            exit 1
-          fi
-          
-          if [ -z "$APPLE_TEAM_ID" ]; then
-            echo "❌ ERRO: Secret APPLE_TEAM_ID não está configurado!"
-            exit 1
-          fi
-          
-          echo "✅ APPLE_ID encontrado: ${APPLE_ID:0:3}***${APPLE_ID: -10}"
-          echo "✅ APPLE_PASSWORD encontrado: ${APPLE_PASSWORD:0:4}-****-****-****"
-          echo "✅ APPLE_TEAM_ID encontrado: $APPLE_TEAM_ID"
-          
-          # Testar autenticação (sem fazer nada, apenas validar)
-          echo ""
-          echo "🧪 Testando autenticação com Apple..."
-          if xcrun notarytool history --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_PASSWORD" 2>&1 | head -5; then
-            echo "✅ Autenticação bem-sucedida!"
-          else
-            echo "❌ ERRO: Falha na autenticação!"
-            echo "Verifique se APPLE_ID, APPLE_PASSWORD e APPLE_TEAM_ID estão corretos."
-            exit 1
-          fi
-
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -162,10 +84,9 @@ jobs:
           releaseBody: "Release ${{ github.ref_name }}"
           releaseDraft: false
           prerelease: false
-          args: --verbose
+          args: ${{ matrix.args }} --verbose
 
-      - name: Cleanup keychain (macOS)
+      - name: Cleanup keychain
         if: matrix.platform == 'macos-latest' && always()
         run: |
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-          security delete-keychain $KEYCHAIN_PATH || true
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
