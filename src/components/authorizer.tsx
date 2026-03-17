@@ -1,3 +1,4 @@
+import { config } from "@/config";
 import { cn } from "@/lib/utils";
 import { getDevice, setDevice } from "@/storage/device";
 import { fetch } from "@tauri-apps/plugin-http";
@@ -5,7 +6,6 @@ import { platform as getPlatform } from "@tauri-apps/plugin-os";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Loader2, PartyPopper } from "lucide-react";
 import { useEffect, useState } from "react";
-import { config } from "@/config";
 
 export function Authorizer() {
     const [isVisible, setIsVisible] = useState<boolean>(false);
@@ -26,13 +26,21 @@ export function Authorizer() {
         setIsLoading(true);
         setError("");
 
+        const timeout = setTimeout(() => {
+            setIsLoading(false);
+            setError("Connection timed out. Please try again.");
+        }, 15000);
+
         try {
             const platform = getPlatform().toUpperCase();
             const response = await fetch(`${config.apiUrl}/devices`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ licenseKey: key.trim(), platform }),
+                connectTimeout: 15,
             });
+
+            clearTimeout(timeout);
 
             if (!response.ok) {
                 const data = await response.json().catch(() => null);
@@ -50,6 +58,7 @@ export function Authorizer() {
 
             setTimeout(() => setIsVisible(false), 1800);
         } catch (err: any) {
+            clearTimeout(timeout);
             setError(err.message || "Failed to activate. Please try again.");
         } finally {
             setIsLoading(false);

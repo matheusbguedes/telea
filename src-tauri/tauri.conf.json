@@ -106,7 +106,7 @@
     },
     "macOS": {
       "entitlements": "entitlements.plist",
-      "exceptionDomain": null,
+      "exceptionDomain": "railway.app",
       "frameworks": [],
       "providerShortName": "49D5C7N239",
       "signingIdentity": "Developer ID Application: Matheus Guedes (49D5C7N239)",
