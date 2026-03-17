@@ -56,9 +56,12 @@
             "core:event:allow-listen",
             "core:event:default",
             "os:default",
-            "http:default",
+            "http:allow-fetch",
+            "http:allow-fetch-send",
+            "http:allow-fetch-read-body",
+            "http:allow-fetch-cancel",
             {
-              "identifier": "http:allow-fetch",
+              "identifier": "http:default",
               "allow": [
                 {
                   "url": "https://*.railway.app/*"

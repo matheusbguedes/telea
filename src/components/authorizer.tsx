@@ -1,4 +1,3 @@
-import { config } from "@/config";
 import { cn } from "@/lib/utils";
 import { getDevice, setDevice } from "@/storage/device";
 import { fetch } from "@tauri-apps/plugin-http";
@@ -33,11 +32,10 @@ export function Authorizer() {
 
         try {
             const platform = getPlatform().toUpperCase();
-            const response = await fetch(`${config.apiUrl}/devices`, {
+            const response = await fetch("https://telea-server-production.up.railway.app/devices", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ licenseKey: key.trim(), platform }),
-                connectTimeout: 15,
             });
 
             clearTimeout(timeout);
@@ -59,7 +57,7 @@ export function Authorizer() {
             setTimeout(() => setIsVisible(false), 1800);
         } catch (err: any) {
             clearTimeout(timeout);
-            setError(err.message || "Failed to activate. Please try again.");
+            setError(err);
         } finally {
             setIsLoading(false);
         }
