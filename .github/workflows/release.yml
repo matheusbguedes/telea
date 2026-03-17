@@ -77,9 +77,42 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: "${{ github.ref_name }}"
           releaseBody: "Release ${{ github.ref_name }}"
-          releaseDraft: false
+          releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }} --verbose
+
+      - name: Notarize and staple DMG
+        if: matrix.platform == 'macos-latest'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          DMG=$(find src-tauri/target/universal-apple-darwin/release/bundle/dmg -name "*.dmg" | head -1)
+
+          xcrun notarytool submit "$DMG" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+
+          xcrun stapler staple "$DMG"
+          xcrun stapler validate "$DMG"
+
+      - name: Re-upload DMG
+        if: matrix.platform == 'macos-latest'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=${{ github.ref_name }}
+          DMG=$(find src-tauri/target/universal-apple-darwin/release/bundle/dmg -name "*.dmg" | head -1)
+          FILENAME=$(basename "$DMG")
+
+          gh release delete-asset "$TAG" "$FILENAME" --yes 2>/dev/null || true
+
+          gh release upload "$TAG" "$DMG" --clobber
+
+          gh release edit "$TAG" --draft=false
 
       - name: Cleanup keychain
         if: matrix.platform == 'macos-latest' && always()
