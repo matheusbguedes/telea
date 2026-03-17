@@ -57,7 +57,7 @@ export function Authorizer() {
             setTimeout(() => setIsVisible(false), 1800);
         } catch (err: any) {
             clearTimeout(timeout);
-            setError(err);
+            setError(err?.message || "Failed to activate. Please try again.");
         } finally {
             setIsLoading(false);
         }
