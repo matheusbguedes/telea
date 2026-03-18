@@ -113,7 +113,10 @@
       "frameworks": [],
       "providerShortName": "49D5C7N239",
       "signingIdentity": "Developer ID Application: Matheus Guedes (49D5C7N239)",
-      "minimumSystemVersion": "10.13"
+      "minimumSystemVersion": "10.13",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Telea needs the microphone to scroll the text based on the audio."
+      }
     },
     "createUpdaterArtifacts": true
   },

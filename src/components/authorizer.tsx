@@ -221,7 +221,7 @@ export function Authorizer() {
                     transition={{ duration: 0.5, delay: 0.4 }}
                     className="text-xs text-white/25 text-center leading-relaxed mb-5 select-none"
                 >
-                    If you need help, please contact us at <span className="text-purple-500">support@telea.com</span>
+                    If you need help, please contact us at <span className="text-purple-500">support@usetelea.online</span>
                 </motion.p>
             </motion.div>
         </motion.div>
