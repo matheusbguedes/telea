@@ -4508,7 +4508,7 @@ dependencies = [
 
 [[package]]
 name = "telea"
-version = "0.1.14"
+version = "0.1.15"
 dependencies = [
  "cocoa",
  "objc",
