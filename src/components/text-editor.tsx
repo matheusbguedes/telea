@@ -22,7 +22,7 @@ export function TextEditor() {
     };
 
     const save = async (title: string, content: string) => {
-        if (!content.trim()) return;
+        if (!title.trim() && !content.trim()) return;
 
         try {
             const current = textRef.current;
@@ -65,12 +65,12 @@ export function TextEditor() {
                 type="text"
                 value={text?.title ?? ""}
                 onChange={(e) => handleChange("title", e.target.value)}
-                className="w-full resize-none rounded-2xl bg-transparent text-white outline-none transition-colors duration-300 placeholder:text-zinc-500 border border-transparent hover:border-white/10 px-4 py-2 text-xl font-bold"
+                className="w-full resize-none rounded-2xl bg-transparent text-white outline-none transition-colors duration-300 placeholder:text-white/20 border border-transparent hover:border-white/10 px-4 py-2 text-xl font-bold"
             />
             <textarea
                 value={text?.content ?? ""}
                 onChange={(e) => handleChange("content", e.target.value)}
-                className="w-full h-full resize-none rounded-2xl bg-transparent text-white outline-none transition-colors duration-300 placeholder:text-zinc-500 border border-transparent hover:border-white/10 px-4 py-2 hidden-scrollbar"
+                className="w-full h-full resize-none rounded-2xl bg-transparent text-white outline-none transition-colors duration-300 placeholder:text-white/20 border border-transparent hover:border-white/10 px-4 py-2 hidden-scrollbar"
             />
         </div>
     );

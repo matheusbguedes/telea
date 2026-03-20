@@ -6,7 +6,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Loader2, PartyPopper } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export function Authorizer() {
+interface AuthorizerProps {
+    onAuthorized?: () => void;
+}
+
+export function Authorizer({ onAuthorized }: AuthorizerProps) {
     const [isVisible, setIsVisible] = useState<boolean>(false);
 
     const [key, setKey] = useState("");
@@ -54,7 +58,10 @@ export function Authorizer() {
                 licenseKey: key.trim(),
             });
 
-            setTimeout(() => setIsVisible(false), 1800);
+            setTimeout(() => {
+                setIsVisible(false);
+                onAuthorized?.();
+            }, 1500);
         } catch (err: any) {
             clearTimeout(timeout);
             setError(err?.message || "Failed to activate. Please try again.");

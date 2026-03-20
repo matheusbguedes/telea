@@ -6,12 +6,16 @@ import { TextEditor } from "@/components/text-editor";
 import { TextList } from "@/components/text-list";
 import { Window } from "@/types/window";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { useState } from "react";
 import { Authorizer } from "./components/authorizer";
+import { Onboarding } from "./components/onboarding";
 import { VersionBadge } from "./components/version-badge";
 
 const currentWindow = getCurrentWebviewWindow();
 
 function App() {
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
   if (currentWindow.label === Window.PROMPT) return <Prompter />;
 
   return (
@@ -26,7 +30,8 @@ function App() {
         </header>
         <TextEditor />
       </div>
-      <Authorizer />
+      <Authorizer onAuthorized={() => setIsAuthorized(true)} />
+      <Onboarding shouldCheckNow={isAuthorized} />
     </div>
   );
 }
