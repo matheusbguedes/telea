@@ -1,4 +1,11 @@
+import {
+    PROMPTER_TEXT_COLOR_CLASS,
+    PROMPTER_TEXT_SIZE_CLASS,
+} from "@/lib/prompter-display";
 import { cn } from "@/lib/utils";
+import { getPrompterSettings } from "@/storage/prompter-settings";
+import { PROMPTER_SETTINGS_DEFAULTS } from "@/types/prompter-settings";
+import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { platform as getPlatform } from "@tauri-apps/plugin-os";
 import { motion, useAnimation } from "framer-motion";
@@ -7,8 +14,6 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "../animate-ui/components/buttons/button";
 import { Countdown } from "./countdown";
 import VoiceIndicator from "./voice-indicator";
-
-const SCROLL_SPEED = 22;
 const VOICE_THRESHOLD = 45;
 const VOICE_HISTORY_SIZE = 10;
 const VOICE_FREQ_MIN = 85;
@@ -16,6 +21,9 @@ const VOICE_FREQ_MAX = 2000;
 
 export default function Prompter() {
     const platform = getPlatform().toUpperCase();
+
+    const [settings, setSettings] = useState(() => PROMPTER_SETTINGS_DEFAULTS);
+    const scrollSpeedRef = useRef(settings.scrollSpeed);
 
     const [content, setContent] = useState<string>("");
     const [showCountdown, setShowCountdown] = useState(true);
@@ -38,6 +46,26 @@ export default function Prompter() {
     const isManuallyPausedRef = useRef<boolean>(false);
     const isScrollingRef = useRef<boolean>(false);
     const isResettingToTopRef = useRef<boolean>(false);
+
+    useEffect(() => {
+        scrollSpeedRef.current = settings.scrollSpeed;
+    }, [settings.scrollSpeed]);
+
+    useEffect(() => {
+        getPrompterSettings().then(setSettings);
+    }, []);
+
+    useEffect(() => {
+        let unlisten: (() => void) | undefined;
+        listen("prompter-settings-updated", () => {
+            getPrompterSettings().then(setSettings);
+        }).then((fn) => {
+            unlisten = fn;
+        });
+        return () => {
+            unlisten?.();
+        };
+    }, []);
 
     // Keep refs in sync with state for use inside event handlers
     useEffect(() => { isSpeakingRef.current = isSpeaking; }, [isSpeaking]);
@@ -153,7 +181,7 @@ export default function Prompter() {
 
         const container = containerRef.current;
         const scrollHeight = container.scrollHeight - container.clientHeight;
-        const duration = scrollHeight / SCROLL_SPEED;
+        const duration = scrollHeight / scrollSpeedRef.current;
 
         controls.start({ y: -scrollHeight, transition: { duration, ease: "linear" } });
     }, [isScrolling, content]);
@@ -167,7 +195,7 @@ export default function Prompter() {
 
             const scrollHeight = container.scrollHeight - container.clientHeight;
             const remainingDistance = scrollHeight - Math.abs(pausedAtRef.current);
-            const remainingDuration = remainingDistance / SCROLL_SPEED;
+            const remainingDuration = remainingDistance / scrollSpeedRef.current;
 
             if (remainingDuration > 0) {
                 controls.start({ y: -scrollHeight, transition: { duration: remainingDuration, ease: "linear" } });
@@ -198,7 +226,7 @@ export default function Prompter() {
         if (!container) return;
         const scrollHeight = container.scrollHeight - container.clientHeight;
         const remainingDistance = scrollHeight - Math.abs(yPosition);
-        const remainingDuration = remainingDistance / SCROLL_SPEED;
+        const remainingDuration = remainingDistance / scrollSpeedRef.current;
         if (remainingDuration > 0) {
             controls.start({ y: -scrollHeight, transition: { duration: remainingDuration, ease: "linear" } });
         }
@@ -354,7 +382,13 @@ export default function Prompter() {
                             }
                         } : {}}
                     >
-                        <p className="text-white text-xl text-center text-balance font-medium leading-normal select-none cursor-default">
+                        <p
+                            className={cn(
+                                "text-center text-balance font-medium leading-normal select-none cursor-default",
+                                PROMPTER_TEXT_SIZE_CLASS[settings.textSize],
+                                PROMPTER_TEXT_COLOR_CLASS[settings.textColor],
+                            )}
+                        >
                             {content}
                         </p>
                     </motion.div>
