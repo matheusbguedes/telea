@@ -1,21 +1,31 @@
 import "@/App.css";
 import { PrompterButton } from "@/components/prompter-button";
+import { PrompterSettingsSheet } from "@/components/prompter-settings-sheet";
 import Prompter from "@/components/prompter/prompter";
 import Aurora from "@/components/reactbits/aurora";
 import { TextEditor } from "@/components/text-editor";
-import { PrompterSettingsSheet } from "@/components/prompter-settings-sheet";
 import { TextList } from "@/components/text-list";
 import { Window } from "@/types/window";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Authorizer } from "./components/authorizer";
 import { Onboarding } from "./components/onboarding";
+import { Updater } from "./components/updater";
 import { VersionBadge } from "./components/version-badge";
+import { useUpdater } from "./hooks/use-updater";
 
 const currentWindow = getCurrentWebviewWindow();
 
 function App() {
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [showUpdater, setShowUpdater] = useState(false);
+  const { status, update, downloadAndInstall } = useUpdater();
+
+  useEffect(() => {
+    if (update) {
+      setShowUpdater(true);
+    }
+  }, [update]);
 
   if (currentWindow.label === Window.PROMPT) return <Prompter />;
 
@@ -36,6 +46,14 @@ function App() {
       </div>
       <Authorizer onAuthorized={() => setIsAuthorized(true)} />
       <Onboarding shouldCheckNow={isAuthorized} />
+      <Updater
+        isVisible={showUpdater && !!update}
+        currentVersion={update?.currentVersion}
+        newVersion={update?.version}
+        isDownloading={status === "downloading"}
+        onUpdate={downloadAndInstall}
+        onSkip={() => setShowUpdater(false)}
+      />
     </div>
   );
 }

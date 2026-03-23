@@ -64,7 +64,7 @@ export function PrompterSettingsSheet() {
           box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
         .ps-color-dot-active {
-          box-shadow: 0 0 7px 1px var(--dot-color), 0 0 0 2px rgba(0,0,0,0.25);
+          box-shadow: 0 0 4px 1px var(--dot-color), 0 0 0 2px rgba(0,0,0,0.25);
           transform: scale(1.2);
         }
       `}</style>
