@@ -1,0 +1,35 @@
+---
+description: Layers, boundaries, and dependencies (Vite/React + Tauri).
+alwaysApply: true
+---
+
+# Architecture
+
+## Dependency direction
+
+- **UI** (`components`, routes, pages) may import **hooks**, **lib**, and **types**.
+- **Hooks** import **lib**, **Tauri invoke**, and types; avoid pulling in heavy components unless needed.
+- **Domain logic** (business rules) must not depend on JSX or Tauri specifics; isolate side effects (IPC, storage, HTTP) in small modules.
+- **Rust (`src-tauri`)**: well-defined commands/events; stable contracts exposed to the front; validation and predictable errors at the boundary.
+
+## Organization
+
+- Keep code **close to its consumer** (feature/component folder) when specific; move to **shared** only after a real second use.
+- **One primary responsibility** per file; split when a file grows past ~200–300 lines or mixes UI with many integrations.
+- Use **predictable** folder/file names (`prompter/`, `settings/`); avoid huge catch-all “misc” or “utils” modules.
+
+## Tauri boundary
+
+- Centralize `invoke` / plugin calls in a few places (e.g. `lib/tauri/*` or hooks), not scattered across every component.
+- **Mirror** Rust contracts in payload/response types when possible; surface errors and loading states explicitly in the UI.
+
+## Avoid
+
+- **Circular imports** between peers; break cycles with shared types or an intermediate layer.
+- **Critical logic only in components** with no extractable hook/test; **duplicated** serialization or Rust↔TS mapping.
+- **God components** that render, fetch, persist, and enforce business rules in one block.
+
+## Principles
+
+- **Composition over inheritance**; explicit props; state as local as practical.
+- **Immutability** when updating React state; effects only for external sync (DOM, Tauri, timers)—not for derivations better handled by `useMemo` / `useState`.

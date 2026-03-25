@@ -1,0 +1,16 @@
+---
+description: Strict TypeScript, contracts, and component props on the front end.
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Types and contracts
+
+- **`any`**: avoid it; use `unknown` + narrowing, domain types, or generics.
+- **Component props**: dedicated `interface` or `type`; export only when reused; type `children` (`React.ReactNode`).
+- **Events**: use React types (`FormEvent`, `ChangeEvent<HTMLInputElement>`) instead of assuming `any`.
+- **Discriminated unions** for mutually exclusive state (`status: 'idle' | 'loading' | 'success' | 'error'` + fields per variant).
+- **Narrowing**: `if` / `switch` / `in` before reading optional fields on unions.
+- **Explicit return types** on public functions or hooks when inference is not obvious to readers.
+
+Tauri: align TS types with payloads; share types when the contract is stable.
