@@ -1,5 +1,7 @@
 export type AppLocale = "en" | "pt" | "es";
 
+export const DEFAULT_APP_LOCALE: AppLocale = "en";
+
 export const APP_LOCALES: AppLocale[] = ["en", "pt", "es"];
 
 export const APP_LOCALE_UPDATED_EVENT = "app-locale-updated" as const;
@@ -16,11 +18,4 @@ export const HTML_LANG_BY_APP_LOCALE: Record<AppLocale, string> = {
 
 export function isAppLocale(value: unknown): value is AppLocale {
   return value === "en" || value === "pt" || value === "es";
-}
-
-export function inferAppLocaleFromNavigator(): AppLocale {
-  const nav = typeof navigator !== "undefined" ? navigator.language.toLowerCase() : "";
-  if (nav.startsWith("pt")) return "pt";
-  if (nav.startsWith("es")) return "es";
-  return "en";
 }

@@ -1,8 +1,8 @@
 import {
   APP_LOCALE_UPDATED_EVENT,
+  DEFAULT_APP_LOCALE,
   type AppLocale,
   type AppLocaleUpdatedPayload,
-  inferAppLocaleFromNavigator,
   isAppLocale,
 } from "@/types/app-locale";
 import { emit } from "@tauri-apps/api/event";
@@ -14,10 +14,9 @@ export async function getAppLocale(): Promise<AppLocale> {
   const saved = await store.get<unknown>("locale");
   if (isAppLocale(saved)) return saved;
 
-  const initial = inferAppLocaleFromNavigator();
-  await store.set("locale", initial);
+  await store.set("locale", DEFAULT_APP_LOCALE);
   await store.save();
-  return initial;
+  return DEFAULT_APP_LOCALE;
 }
 
 export async function saveAppLocale(locale: AppLocale): Promise<void> {
