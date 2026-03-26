@@ -3,6 +3,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/animate-ui/compo
 import { cn } from "@/lib/utils";
 import { usePrompterSettings } from "@/stores/use-prompter-settings";
 import type { PrompterTextColor, PrompterTextSize } from "@/types/prompter-settings";
+import { motion } from "framer-motion";
 import { Settings2Icon } from "lucide-react";
 import { useState } from "react";
 
@@ -31,41 +32,40 @@ export function PrompterSettingsSheet() {
   return (
     <>
       <style>{`
-        /* ── Slider ── */
         .ps-range {
           -webkit-appearance: none;
           appearance: none;
           width: 100%;
-          height: 3px;
+          height: 4px;
           border-radius: 99px;
           outline: none;
           cursor: pointer;
         }
         .ps-range::-webkit-slider-thumb {
           -webkit-appearance: none;
-          width: 16px;
-          height: 16px;
+          width: 18px;
+          height: 18px;
           border-radius: 50%;
           background: #a855f7;
-          box-shadow: 0 0 0 3px rgba(168,85,247,0.25), 0 2px 6px rgba(0,0,0,0.5);
-          transition: transform 0.15s, box-shadow 0.15s;
+          box-shadow: 0 0 0 4px rgba(168,85,247,0.2), 0 2px 8px rgba(0,0,0,0.4);
+          transition: transform 0.2s, box-shadow 0.2s;
           cursor: grab;
         }
         .ps-range::-webkit-slider-thumb:hover {
-          transform: scale(1.2);
-          box-shadow: 0 0 0 5px rgba(168,85,247,0.20), 0 2px 8px rgba(0,0,0,0.6);
+          transform: scale(1.15);
+          box-shadow: 0 0 0 6px rgba(168,85,247,0.25), 0 4px 12px rgba(0,0,0,0.5);
         }
-        .ps-range::-webkit-slider-thumb:active { cursor: grabbing; }
+        .ps-range::-webkit-slider-thumb:active { 
+          cursor: grabbing;
+          transform: scale(1.05);
+        }
         .ps-range::-moz-range-thumb {
-          width: 16px; height: 16px;
+          width: 18px; 
+          height: 18px;
           border-radius: 50%;
           background: #a855f7;
           border: none;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-        }
-        .ps-color-dot-active {
-          box-shadow: 0 0 4px 1px var(--dot-color), 0 0 0 2px rgba(0,0,0,0.25);
-          transform: scale(1.2);
+          box-shadow: 0 0 0 4px rgba(168,85,247,0.2), 0 2px 8px rgba(0,0,0,0.4);
         }
       `}</style>
 
@@ -77,107 +77,168 @@ export function PrompterSettingsSheet() {
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="h-full bg-transparent border-none shadow-none outline-none w-[min(100vw,320px)]"
+          className="h-full bg-black/40 backdrop-blur-md border-white/[0.08] shadow-2xl w-[min(100vw,380px)]"
           showCloseButton={false}
         >
-          <div className="flex flex-col min-h-0 h-full pt-12 pb-4 px-4 gap-6">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col min-h-0 h-full pt-12 pb-6 px-6 gap-8"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <h2
+                className="text-xl font-bold text-white tracking-tight mb-1 select-none"
+                style={{ fontFamily: "'Inter', system-ui, sans-serif", letterSpacing: "-0.02em" }}
+              >
+                Settings
+              </h2>
+              <p className="text-sm text-white/40 select-none">
+                Customize your experience
+              </p>
+            </motion.div>
+
             {!ready ? (
-              <div className="w-full h-full flex flex-col gap-6 animate-pulse">
-                <div className="flex flex-col gap-2">
-                  <div className="w-20 h-4 bg-zinc-400/15 rounded-md" />
-                  <div className="w-full h-10 bg-zinc-400/15 rounded-lg" />
+              <div className="w-full flex flex-col gap-8 animate-pulse">
+                <div className="flex flex-col gap-3">
+                  <div className="w-24 h-4 bg-white/[0.08] rounded-md" />
+                  <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <div className="w-20 h-4 bg-zinc-400/15 rounded-md" />
-                  <div className="w-full h-10 bg-zinc-400/15 rounded-lg" />
+                <div className="flex flex-col gap-3">
+                  <div className="w-24 h-4 bg-white/[0.08] rounded-md" />
+                  <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <div className="w-20 h-4 bg-zinc-400/15 rounded-md" />
-                  <div className="w-full h-10 bg-zinc-400/15 rounded-lg" />
+                <div className="flex flex-col gap-3">
+                  <div className="w-24 h-4 bg-white/[0.08] rounded-md" />
+                  <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
                 </div>
               </div>
             ) : (
               <>
-                <div className="flex flex-col gap-3">
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="flex flex-col gap-4"
+                >
                   <div className="flex items-center justify-between">
-                    <label className="text-xs text-white/60" htmlFor="scroll-speed">
+                    <label
+                      className="text-sm font-medium text-white/80 select-none"
+                      htmlFor="scroll-speed"
+                      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                    >
                       Text speed
                     </label>
-                    <span className="text-xs font-mono text-white/80 tabular-nums">
+                    <span className="text-xs font-mono text-white/60 bg-white/[0.06] px-2.5 py-1 rounded-lg tabular-nums">
                       {settings.scrollSpeed}
                     </span>
                   </div>
-                  <input
-                    id="scroll-speed"
-                    type="range"
-                    min={SPEEDS.min}
-                    max={SPEEDS.max}
-                    step={SPEEDS.step}
-                    value={settings.scrollSpeed}
-                    className="ps-range"
-                    style={{
-                      background: `linear-gradient(to right,
-                        #a855f7 0%,
-                        #a855f7 ${speedPct}%,
-                        rgba(255,255,255,0.15) ${speedPct}%,
-                        rgba(255,255,255,0.15) 100%)`,
-                    }}
-                    onChange={(e) => void update({ scrollSpeed: Number(e.target.value) })}
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <span className="text-xs text-white/60">Text size</span>
-                  <div className="flex flex-wrap gap-2">
-                    {TEXT_SIZES.map(({ value, label }) => (
-                      <Button
-                        key={value}
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className={`flex-1 min-w-[5rem] transition-colors ${settings.textSize === value
-                          ? "border-purple-400 text-purple-400 hover:border-purple-400 hover:text-purple-400"
-                          : ""
-                          }`}
-                        onClick={() => void update({ textSize: value })}
-                      >
-                        {label}
-                      </Button>
-                    ))}
+                  <div className="px-1">
+                    <input
+                      id="scroll-speed"
+                      type="range"
+                      min={SPEEDS.min}
+                      max={SPEEDS.max}
+                      step={SPEEDS.step}
+                      value={settings.scrollSpeed}
+                      className="ps-range"
+                      style={{
+                        background: `linear-gradient(to right,
+                          #a855f7 0%,
+                          #a855f7 ${speedPct}%,
+                          rgba(255,255,255,0.12) ${speedPct}%,
+                          rgba(255,255,255,0.12) 100%)`,
+                      }}
+                      onChange={(e) => void update({ scrollSpeed: Number(e.target.value) })}
+                    />
                   </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <span className="text-xs text-white/60">Text color</span>
-                  <div className="grid grid-cols-3 gap-2">
-                    {TEXT_COLORS.map(({ value, label, swatch, hex }) => {
-                      const active = settings.textColor === value;
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.25 }}
+                  className="flex flex-col gap-3"
+                >
+                  <span
+                    className="text-sm font-medium text-white/80 select-none"
+                    style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                  >
+                    Text size
+                  </span>
+                  <div className="flex gap-2">
+                    {TEXT_SIZES.map(({ value, label }) => {
+                      const active = settings.textSize === value;
                       return (
-                        <Button
+                        <button
                           key={value}
-                          size="sm"
                           type="button"
-                          variant="outline"
-                          className={cn("flex-1 min-w-[5rem] justify-start gap-3 transition-colors",
-                            active && "border-purple-400 text-purple-400 hover:border-purple-400 hover:text-purple-400"
+                          onClick={() => void update({ textSize: value })}
+                          className={cn(
+                            "flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 border active:scale-[0.96]",
+                            active
+                              ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
+                              : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80"
                           )}
-                          onClick={() => void update({ textColor: value })}
+                          style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
                         >
-                          <span
-                            className={cn("size-2 rounded-full transition-all duration-150",
-                              active && "ps-color-dot-active",
-                              swatch
-                            )}
-                            style={active ? ({ "--dot-color": hex } as React.CSSProperties) : undefined}
-                            aria-hidden
-                          />
                           {label}
-                        </Button>
+                        </button>
                       );
                     })}
                   </div>
-                </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="flex flex-col gap-3"
+                >
+                  <span
+                    className="text-sm font-medium text-white/80 select-none"
+                    style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                  >
+                    Text color
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {TEXT_COLORS.map(({ value, label, swatch, hex }) => {
+                      const active = settings.textColor === value;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => void update({ textColor: value })}
+                          className={cn(
+                            "flex items-center gap-2.5 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 border active:scale-[0.96]",
+                            active
+                              ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
+                              : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80"
+                          )}
+                          style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                        >
+                          <span
+                            className={cn(
+                              "size-3 rounded-full ring-2 ring-black/20 transition-all duration-200",
+                              swatch,
+                              active && "scale-110"
+                            )}
+                            style={active ? { boxShadow: `0 0 0 2px ${hex}40` } : undefined}
+                            aria-hidden
+                          />
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
               </>
             )}
-          </div>
+          </motion.div>
         </SheetContent>
       </Sheet>
     </>
