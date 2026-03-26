@@ -65,6 +65,8 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
     const isSpeakingRef = useRef<boolean>(false);
     const isManuallyPausedRef = useRef<boolean>(false);
     const isScrollingRef = useRef<boolean>(false);
+    const isPausedRef = useRef<boolean>(false);
+    const prevMaxScrollRef = useRef<number>(0);
 
     useEffect(() => {
         scrollSpeedRef.current = settings.scrollSpeed;
@@ -89,6 +91,7 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
     useEffect(() => { isSpeakingRef.current = isSpeaking; }, [isSpeaking]);
     useEffect(() => { isManuallyPausedRef.current = isManuallyPaused; }, [isManuallyPaused]);
     useEffect(() => { isScrollingRef.current = isScrolling; }, [isScrolling]);
+    useEffect(() => { isPausedRef.current = isPaused; }, [isPaused]);
 
     const detectVoice = () => {
         if (!analyserRef.current) return;
@@ -245,6 +248,7 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
                 pendingInitialYRef.current = null;
                 pausedAtRef.current = y;
                 controls.set({ y });
+                prevMaxScrollRef.current = scrollHeight;
                 if (!isManuallyPausedRef.current && isSpeakingRef.current) {
                     const remainingDistance = scrollHeight - Math.abs(y);
                     const remainingDuration = remainingDistance / scrollSpeedRef.current;
@@ -258,11 +262,13 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
             if (!isSpeakingRef.current) {
                 controls.stop();
                 controls.set({ y: pausedAtRef.current });
+                prevMaxScrollRef.current = scrollHeight;
                 return;
             }
 
             const duration = scrollHeight / scrollSpeedRef.current;
             controls.start({ y: -scrollHeight, transition: { duration, ease: "linear" } });
+            prevMaxScrollRef.current = scrollHeight;
         });
 
         return () => cancelAnimationFrame(frame);
@@ -294,6 +300,68 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
             }
         }
     }, [isSpeaking, isScrolling, isPaused, isManuallyPaused]);
+
+    useEffect(() => {
+        if (!isFloating || !isScrolling) return;
+        const container = containerRef.current;
+        if (!container) return;
+
+        let raf = 0;
+        const readMotionY = (root: HTMLDivElement): number => {
+            const el = root.firstElementChild as HTMLElement | null;
+            if (!el) return pausedAtRef.current;
+            const matrix = getComputedStyle(el).transform.match(/matrix.*\((.+)\)/);
+            if (matrix) return parseFloat(matrix[1].split(", ")[5] ?? "0");
+            return pausedAtRef.current;
+        };
+
+        const observer = new ResizeObserver(() => {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => {
+                if (pendingInitialYRef.current !== null) return;
+                const el = containerRef.current;
+                if (!el) return;
+
+                const prevMax = prevMaxScrollRef.current;
+                const y = readMotionY(el);
+                const maxNew = Math.max(0, el.scrollHeight - el.clientHeight);
+                const progress =
+                    prevMax > 0
+                        ? Math.min(1, Math.max(0, Math.abs(y) / prevMax))
+                        : maxNew > 0
+                          ? Math.min(1, Math.max(0, Math.abs(y) / maxNew))
+                          : 0;
+                const rawY = maxNew <= 0 ? 0 : -Math.round(progress * maxNew);
+                const yNew = Math.min(0, Math.max(-maxNew, rawY));
+
+                prevMaxScrollRef.current = maxNew;
+                pausedAtRef.current = yNew;
+                void controls.stop();
+                void controls.set({ y: yNew });
+
+                if (
+                    isSpeakingRef.current &&
+                    !isPausedRef.current &&
+                    !isManuallyPausedRef.current
+                ) {
+                    const remainingDistance = maxNew - Math.abs(yNew);
+                    const remainingDuration = remainingDistance / scrollSpeedRef.current;
+                    if (remainingDuration > 0) {
+                        void controls.start({
+                            y: -maxNew,
+                            transition: { duration: remainingDuration, ease: "linear" },
+                        });
+                    }
+                }
+            });
+        });
+
+        observer.observe(container);
+        return () => {
+            cancelAnimationFrame(raf);
+            observer.disconnect();
+        };
+    }, [isFloating, isScrolling, controls]);
 
     const getCurrentY = () => {
         const el = containerRef.current?.firstElementChild as HTMLElement | null;

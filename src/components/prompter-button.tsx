@@ -8,7 +8,7 @@ import {
   closeFloatingPromptIfExists,
   closeStandardPromptIfExists,
   createStandardPromptWebview,
-  getStandardPromptWindowX,
+  getStandardPromptWindowPosition,
 } from "@/lib/prompter-window";
 import { getTextById } from "@/storage/text";
 import { Window } from "@/types/window";
@@ -93,10 +93,10 @@ export function PrompterButton() {
     await closeFloatingPromptIfExists();
     await closeStandardPromptIfExists();
 
-    const x = await getStandardPromptWindowX();
-    if (x === null) return;
+    const pos = await getStandardPromptWindowPosition();
+    if (pos === null) return;
 
-    const window = createStandardPromptWebview(x);
+    const window = createStandardPromptWebview(pos.x, pos.y);
     promptWindowRef.current = window;
     setPromptAlive(true);
     setWindowRef(window);

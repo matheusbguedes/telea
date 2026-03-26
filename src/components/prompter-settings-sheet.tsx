@@ -1,5 +1,5 @@
 import { Button } from "@/components/animate-ui/components/buttons/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/animate-ui/components/radix/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/animate-ui/components/radix/sheet";
 import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { saveAppLocale } from "@/storage/app-locale";
@@ -103,6 +103,7 @@ export function PrompterSettingsSheet() {
           className="h-full bg-black/40 backdrop-blur-md border-white/[0.08] shadow-2xl w-[min(100vw,380px)]"
           showCloseButton={false}
         >
+          <SheetTitle className="sr-only">{t("settings.title")}</SheetTitle>
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
