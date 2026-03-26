@@ -6,9 +6,11 @@ import { Text } from "@/types/text";
 import { motion } from "framer-motion";
 import { PanelLeftIcon, PlusIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { TextCard } from "./text-card";
 
 export function TextList() {
+  const { t } = useTranslation();
   const { selectedText, setSelectedText } = useTextContext();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -45,7 +47,7 @@ export function TextList() {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon" aria-label="Abrir menu lateral">
+        <Button variant="outline" size="icon" aria-label={t("textList.openMenuAria")}>
           <PanelLeftIcon className="size-4" />
         </Button>
       </SheetTrigger>
@@ -69,10 +71,10 @@ export function TextList() {
               className="text-xl font-bold text-white tracking-tight mb-1 select-none"
               style={{ fontFamily: "'Inter', system-ui, sans-serif", letterSpacing: "-0.02em" }}
             >
-              Your scripts
+              {t("textList.title")}
             </h2>
             <p className="text-sm text-white/40 select-none">
-              Select a script to load into the prompter
+              {t("textList.subtitle")}
             </p>
           </motion.div>
           <motion.div
@@ -90,10 +92,10 @@ export function TextList() {
                 className="flex flex-col items-center justify-center h-full text-center py-12"
               >
                 <p className="text-sm text-white/40 select-none mb-2">
-                  No scripts yet
+                  {t("textList.emptyTitle")}
                 </p>
                 <p className="text-xs text-white/25 select-none">
-                  Create your first script to get started
+                  {t("textList.emptyHint")}
                 </p>
               </motion.div>
             ) : (
@@ -132,7 +134,7 @@ export function TextList() {
               <span
                 className="font-medium"
               >
-                New script
+                {t("textList.newScript")}
               </span>
               <PlusIcon className="size-5" />
             </Button>

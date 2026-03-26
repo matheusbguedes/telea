@@ -1,33 +1,52 @@
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/animate-ui/components/radix/sheet";
+import i18n from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { saveAppLocale } from "@/storage/app-locale";
 import { usePrompterSettings } from "@/stores/use-prompter-settings";
+import { APP_LOCALES, type AppLocale, isAppLocale } from "@/types/app-locale";
 import type { PrompterTextColor, PrompterTextSize } from "@/types/prompter-settings";
 import { motion } from "framer-motion";
 import { Settings2Icon } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const SPEEDS = { min: 10, max: 50, step: 1 } as const;
 
-const TEXT_SIZES: { value: PrompterTextSize; label: string }[] = [
-  { value: "small", label: "Small" },
-  { value: "medium", label: "Medium" },
-  { value: "large", label: "Large" },
-];
+const TEXT_SIZE_VALUES: PrompterTextSize[] = ["small", "medium", "large"];
 
-const TEXT_COLORS: { value: PrompterTextColor; label: string; swatch: string; hex: string }[] = [
-  { value: "white", label: "White", swatch: "bg-white", hex: "#ffffff" },
-  { value: "purple", label: "Purple", swatch: "bg-purple-400", hex: "#c084fc" },
-  { value: "yellow", label: "Yellow", swatch: "bg-yellow-400", hex: "#facc15" },
-  { value: "green", label: "Green", swatch: "bg-green-400", hex: "#4ade80" },
-];
+const TEXT_COLORS: {
+  value: PrompterTextColor;
+  swatch: string;
+  hex: string;
+}[] = [
+    { value: "white", swatch: "bg-white", hex: "#ffffff" },
+    { value: "purple", swatch: "bg-purple-400", hex: "#c084fc" },
+    { value: "yellow", swatch: "bg-yellow-400", hex: "#facc15" },
+    { value: "green", swatch: "bg-green-400", hex: "#4ade80" },
+  ];
+
+const LOCALE_LABEL_KEYS: Record<AppLocale, string> = {
+  en: "settings.langEn",
+  pt: "settings.langPt",
+  es: "settings.langEs",
+};
 
 export function PrompterSettingsSheet() {
+  const { t } = useTranslation();
   const { settings, ready, update } = usePrompterSettings();
   const [isOpen, setIsOpen] = useState(false);
 
   const speedPct =
     ((settings.scrollSpeed - SPEEDS.min) / (SPEEDS.max - SPEEDS.min)) * 100;
+
+  const activeLocale: AppLocale = isAppLocale(i18n.language) ? i18n.language : "en";
+
+  async function selectLocale(locale: AppLocale) {
+    if (locale === activeLocale) return;
+    await saveAppLocale(locale);
+    await i18n.changeLanguage(locale);
+  }
 
   return (
     <>
@@ -71,7 +90,11 @@ export function PrompterSettingsSheet() {
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button variant="outline" size="icon" aria-label="Prompter settings">
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label={t("settings.prompterSettingsAria")}
+          >
             <Settings2Icon className="size-4" />
           </Button>
         </SheetTrigger>
@@ -95,13 +118,12 @@ export function PrompterSettingsSheet() {
                 className="text-xl font-bold text-white tracking-tight mb-1 select-none"
                 style={{ fontFamily: "'Inter', system-ui, sans-serif", letterSpacing: "-0.02em" }}
               >
-                Settings
+                {t("settings.title")}
               </h2>
               <p className="text-sm text-white/40 select-none">
-                Customize your experience
+                {t("settings.subtitle")}
               </p>
             </motion.div>
-
             {!ready ? (
               <div className="w-full flex flex-col gap-8 animate-pulse">
                 <div className="flex flex-col gap-3">
@@ -131,7 +153,7 @@ export function PrompterSettingsSheet() {
                       htmlFor="scroll-speed"
                       style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
                     >
-                      Text speed
+                      {t("settings.textSpeed")}
                     </label>
                     <span className="text-xs font-mono text-white/60 bg-white/[0.06] px-2.5 py-1 rounded-lg tabular-nums">
                       {settings.scrollSpeed}
@@ -168,10 +190,10 @@ export function PrompterSettingsSheet() {
                     className="text-sm font-medium text-white/80 select-none"
                     style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
                   >
-                    Text size
+                    {t("settings.textSize")}
                   </span>
                   <div className="flex gap-2">
-                    {TEXT_SIZES.map(({ value, label }) => {
+                    {TEXT_SIZE_VALUES.map((value) => {
                       const active = settings.textSize === value;
                       return (
                         <button
@@ -182,11 +204,11 @@ export function PrompterSettingsSheet() {
                             "flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 border active:scale-[0.96]",
                             active
                               ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
-                              : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80"
+                              : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
                           )}
                           style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
                         >
-                          {label}
+                          {t(`settings.sizes.${value}`)}
                         </button>
                       );
                     })}
@@ -203,10 +225,10 @@ export function PrompterSettingsSheet() {
                     className="text-sm font-medium text-white/80 select-none"
                     style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
                   >
-                    Text color
+                    {t("settings.textColor")}
                   </span>
                   <div className="grid grid-cols-2 gap-2">
-                    {TEXT_COLORS.map(({ value, label, swatch, hex }) => {
+                    {TEXT_COLORS.map(({ value, swatch, hex }) => {
                       const active = settings.textColor === value;
                       return (
                         <button
@@ -217,7 +239,7 @@ export function PrompterSettingsSheet() {
                             "flex items-center gap-2.5 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 border active:scale-[0.96]",
                             active
                               ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
-                              : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80"
+                              : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
                           )}
                           style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
                         >
@@ -225,12 +247,12 @@ export function PrompterSettingsSheet() {
                             className={cn(
                               "size-3 rounded-full ring-2 ring-black/20 transition-all duration-200",
                               swatch,
-                              active && "scale-110"
+                              active && "scale-110",
                             )}
                             style={active ? { boxShadow: `0 0 0 2px ${hex}40` } : undefined}
                             aria-hidden
                           />
-                          {label}
+                          {t(`settings.colors.${value}`)}
                         </button>
                       );
                     })}
@@ -238,6 +260,40 @@ export function PrompterSettingsSheet() {
                 </motion.div>
               </>
             )}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+              className="flex flex-col gap-3"
+            >
+              <span
+                className="text-sm font-medium text-white/80 select-none"
+                style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+              >
+                {t("settings.language")}
+              </span>
+              <div className="flex gap-2">
+                {APP_LOCALES.map((locale) => {
+                  const active = activeLocale === locale;
+                  return (
+                    <button
+                      key={locale}
+                      type="button"
+                      onClick={() => void selectLocale(locale)}
+                      className={cn(
+                        "flex-1 py-2.5 px-2 rounded-xl text-xs font-medium transition-all duration-200 border active:scale-[0.96] sm:text-sm",
+                        active
+                          ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
+                          : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
+                      )}
+                      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                    >
+                      {t(LOCALE_LABEL_KEYS[locale])}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
           </motion.div>
         </SheetContent>
       </Sheet>

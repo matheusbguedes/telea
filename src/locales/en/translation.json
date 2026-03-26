@@ -1,0 +1,99 @@
+{
+  "common": {
+    "close": "Close"
+  },
+  "app": {
+    "documentTitle": "Telea"
+  },
+  "onboarding": {
+    "slide0": {
+      "title": "Welcome to Telea",
+      "description": "Speak like you always know what to say."
+    },
+    "slide1": {
+      "title": "Write your script",
+      "description": "Add a title and your content."
+    },
+    "slide2": {
+      "title": "Press play and speak",
+      "description": "Telea follows your voice and scrolls for you."
+    },
+    "logoAlt": "Telea"
+  },
+  "authorizer": {
+    "title": "Enter your license key",
+    "subtitle": "To continue, please enter your license key.",
+    "placeholder": "License key…",
+    "submit": "Enter license key",
+    "activating": "Activating…",
+    "success": "You are all set!",
+    "help": "If you need help, please contact us at <support>support@usetelea.online</support>",
+    "logoAlt": "Logo",
+    "errors": {
+      "timeout": "Connection timed out. Please try again.",
+      "invalidKey": "Invalid license key.",
+      "failed": "Failed to activate. Please try again.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "deviceStatus": {
+    "title": "Device not active",
+    "description": "This device is no longer active on your license. Try again or sign in with a different license key.",
+    "checking": "Checking…",
+    "tryAgain": "Try again",
+    "useAnotherKey": "Use another license key",
+    "help": "If you need help, please contact us at <support>support@usetelea.online</support>",
+    "logoAlt": "Logo"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Customize your experience",
+    "language": "Language",
+    "langEn": "English",
+    "langPt": "Portuguese",
+    "langEs": "Spanish",
+    "prompterSettingsAria": "Prompter settings",
+    "textSpeed": "Text speed",
+    "textSize": "Text size",
+    "textColor": "Text color",
+    "sizes": {
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large"
+    },
+    "colors": {
+      "white": "White",
+      "purple": "Purple",
+      "yellow": "Yellow",
+      "green": "Green"
+    }
+  },
+  "textList": {
+    "title": "Your scripts",
+    "subtitle": "Select a script to load into the prompter",
+    "emptyTitle": "No scripts yet",
+    "emptyHint": "Create your first script to get started",
+    "newScript": "New script",
+    "openMenuAria": "Open scripts menu"
+  },
+  "updater": {
+    "title": "New update available",
+    "subtitle": "A new version of Telea is ready to be installed.",
+    "current": "Current",
+    "newVersion": "New",
+    "downloading": "Downloading update…",
+    "updateNow": "Update now",
+    "updateLater": "Update later",
+    "restartHint": "Telea will restart automatically after installation.",
+    "logoAlt": "Logo"
+  },
+  "textCard": {
+    "deleteScriptAria": "Delete script"
+  },
+  "prompter": {
+    "restoreStandardAria": "Restore to standard window",
+    "pauseAria": "Pause scrolling",
+    "resumeAria": "Resume scrolling",
+    "openFloatingAria": "Open floating prompter"
+  }
+}

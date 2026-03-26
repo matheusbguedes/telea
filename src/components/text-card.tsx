@@ -1,12 +1,13 @@
 import { useTextContext } from "@/contexts/text-context";
+import { getDateFnsLocaleForApp } from "@/lib/date-fns-locale";
 import { cn } from "@/lib/utils";
 import { deleteText } from "@/storage/text";
 import { Text } from "@/types/text";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { TrashIcon } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "./animate-ui/components/buttons/button";
 
 interface TextCardProps {
@@ -17,8 +18,10 @@ interface TextCardProps {
 }
 
 export function TextCard({ ref, text, onSelect, onDelete }: TextCardProps) {
+  const { t, i18n } = useTranslation();
   const { selectedText, setSelectedText } = useTextContext();
   const [isDeleting, setIsDeleting] = useState(false);
+  const dateLocale = getDateFnsLocaleForApp(i18n.language);
 
   const isActive = selectedText?.id === text.id;
 
@@ -67,7 +70,7 @@ export function TextCard({ ref, text, onSelect, onDelete }: TextCardProps) {
       >
         <div className="flex flex-col gap-2 flex-1 min-w-0">
           <div className="flex flex-col gap-1">
-            <h2 
+            <h2
               className="text-white font-semibold truncate transition-colors duration-200 select-none"
               style={{ fontFamily: "'Inter', system-ui, sans-serif", letterSpacing: "-0.01em" }}
             >
@@ -78,7 +81,7 @@ export function TextCard({ ref, text, onSelect, onDelete }: TextCardProps) {
             </p>
           </div>
           <time className="text-white/30 text-xs select-none font-medium">
-            {format(text.createdAt, "d 'de' MMM '•' HH:mm", { locale: ptBR })}
+            {format(text.createdAt, "PPp", { locale: dateLocale })}
           </time>
         </div>
         <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -87,6 +90,7 @@ export function TextCard({ ref, text, onSelect, onDelete }: TextCardProps) {
             size="icon"
             onClick={handleDelete}
             disabled={isDeleting}
+            aria-label={t("textCard.deleteScriptAria")}
             className="bg-white/[0.04] border-white/[0.08] hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-400 transition-all duration-200"
           >
             <TrashIcon className="size-4" />

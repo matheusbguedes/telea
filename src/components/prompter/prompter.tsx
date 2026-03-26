@@ -18,6 +18,7 @@ import { platform as getPlatform } from "@tauri-apps/plugin-os";
 import { motion, useAnimation } from "framer-motion";
 import { PauseIcon, PlayIcon, SquareArrowOutUpLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "../animate-ui/components/buttons/button";
 import { Countdown } from "./countdown";
 import { FloatingPrompterButton } from "./floating-prompter-button";
@@ -35,6 +36,7 @@ type PrompterProps = {
 };
 
 export default function Prompter({ variant = "standard" }: PrompterProps) {
+    const { t } = useTranslation();
     const isFloating = variant === "floating";
     const platform = getPlatform().toUpperCase();
 
@@ -447,15 +449,18 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
                             variant="outline"
                             className="pointer-events-auto shrink-0"
                             onClick={handleRestoreStandard}
+                            aria-label={t("prompter.restoreStandardAria")}
                         >
                             <SquareArrowOutUpLeft className="size-3" />
                         </Button>
                         <div data-tauri-drag-region className="min-h-9 flex-1 flex items-center justify-center cursor-grab active:cursor-grabbing" />
                         <Button
+                            type="button"
                             size="icon-sm"
                             variant="outline"
                             onClick={handleToggleManualPause}
                             className="pointer-events-auto"
+                            aria-label={isManuallyPaused ? t("prompter.resumeAria") : t("prompter.pauseAria")}
                         >
                             {isManuallyPaused ? <PlayIcon className="size-3" fill="currentColor" /> : <PauseIcon className="size-3" fill="currentColor" />}
                         </Button>
@@ -516,10 +521,12 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
                 {!showCountdown && !isFloating && (
                     <div className="absolute bottom-0 left-0 right-0 h-14 flex items-end justify-between p-2 rounded-b-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
                         <Button
+                            type="button"
                             size="icon-sm"
                             variant="outline"
                             onClick={handleToggleManualPause}
                             className="pointer-events-auto"
+                            aria-label={isManuallyPaused ? t("prompter.resumeAria") : t("prompter.pauseAria")}
                         >
                             {isManuallyPaused ? <PlayIcon className="size-3" fill="currentColor" /> : <PauseIcon className="size-3" fill="currentColor" />}
                         </Button>

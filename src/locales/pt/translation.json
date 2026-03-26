@@ -1,0 +1,99 @@
+{
+  "common": {
+    "close": "Fechar"
+  },
+  "app": {
+    "documentTitle": "Telea"
+  },
+  "onboarding": {
+    "slide0": {
+      "title": "Bem-vindo ao Telea",
+      "description": "Fale como se sempre soubesse o que dizer."
+    },
+    "slide1": {
+      "title": "Escreva seu roteiro",
+      "description": "Adicione um título e o conteúdo."
+    },
+    "slide2": {
+      "title": "Aperte play e fale",
+      "description": "O Telea acompanha sua voz e rola o texto para você."
+    },
+    "logoAlt": "Telea"
+  },
+  "authorizer": {
+    "title": "Informe sua chave de licença",
+    "subtitle": "Para continuar, digite sua chave de licença.",
+    "placeholder": "Chave de licença…",
+    "submit": "Ativar licença",
+    "activating": "Ativando…",
+    "success": "Tudo certo!",
+    "help": "Precisa de ajuda? Fale conosco em <support>support@usetelea.online</support>",
+    "logoAlt": "Logotipo",
+    "errors": {
+      "timeout": "Tempo de conexão esgotado. Tente novamente.",
+      "invalidKey": "Chave de licença inválida.",
+      "failed": "Não foi possível ativar. Tente novamente.",
+      "generic": "Algo deu errado. Tente novamente."
+    }
+  },
+  "deviceStatus": {
+    "title": "Dispositivo inativo",
+    "description": "Este dispositivo não está mais ativo na sua licença. Tente novamente ou use outra chave.",
+    "checking": "Verificando…",
+    "tryAgain": "Tentar novamente",
+    "useAnotherKey": "Usar outra chave de licença",
+    "help": "Precisa de ajuda? Fale conosco em <support>support@usetelea.online</support>",
+    "logoAlt": "Logotipo"
+  },
+  "settings": {
+    "title": "Configurações",
+    "subtitle": "Personalize sua experiência",
+    "language": "Idioma",
+    "langEn": "Inglês",
+    "langPt": "Português",
+    "langEs": "Espanhol",
+    "prompterSettingsAria": "Configurações do teleprompter",
+    "textSpeed": "Velocidade do texto",
+    "textSize": "Tamanho do texto",
+    "textColor": "Cor do texto",
+    "sizes": {
+      "small": "Pequeno",
+      "medium": "Médio",
+      "large": "Grande"
+    },
+    "colors": {
+      "white": "Branco",
+      "purple": "Roxo",
+      "yellow": "Amarelo",
+      "green": "Verde"
+    }
+  },
+  "textList": {
+    "title": "Seus roteiros",
+    "subtitle": "Selecione um roteiro para carregar no teleprompter",
+    "emptyTitle": "Nenhum roteiro ainda",
+    "emptyHint": "Crie seu primeiro roteiro para começar",
+    "newScript": "Novo roteiro",
+    "openMenuAria": "Abrir menu de roteiros"
+  },
+  "updater": {
+    "title": "Nova atualização disponível",
+    "subtitle": "Uma nova versão do Telea está pronta para instalar.",
+    "current": "Atual",
+    "newVersion": "Nova",
+    "downloading": "Baixando atualização…",
+    "updateNow": "Atualizar agora",
+    "updateLater": "Atualizar depois",
+    "restartHint": "O Telea reiniciará automaticamente após a instalação.",
+    "logoAlt": "Logotipo"
+  },
+  "textCard": {
+    "deleteScriptAria": "Excluir roteiro"
+  },
+  "prompter": {
+    "restoreStandardAria": "Restaurar para a janela padrão",
+    "pauseAria": "Pausar rolagem",
+    "resumeAria": "Retomar rolagem",
+    "openFloatingAria": "Abrir teleprompter flutuante"
+  }
+}

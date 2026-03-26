@@ -1,0 +1,99 @@
+{
+  "common": {
+    "close": "Cerrar"
+  },
+  "app": {
+    "documentTitle": "Telea"
+  },
+  "onboarding": {
+    "slide0": {
+      "title": "Bienvenido a Telea",
+      "description": "Habla como si siempre supieras qué decir."
+    },
+    "slide1": {
+      "title": "Escribe tu guion",
+      "description": "Añade un título y tu contenido."
+    },
+    "slide2": {
+      "title": "Pulsa play y habla",
+      "description": "Telea sigue tu voz y hace scroll por ti."
+    },
+    "logoAlt": "Telea"
+  },
+  "authorizer": {
+    "title": "Introduce tu clave de licencia",
+    "subtitle": "Para continuar, introduce tu clave de licencia.",
+    "placeholder": "Clave de licencia…",
+    "submit": "Introducir clave de licencia",
+    "activating": "Activando…",
+    "success": "¡Todo listo!",
+    "help": "Si necesitas ayuda, contáctanos en <support>support@usetelea.online</support>",
+    "logoAlt": "Logotipo",
+    "errors": {
+      "timeout": "Se agotó el tiempo de conexión. Inténtalo de nuevo.",
+      "invalidKey": "Clave de licencia no válida.",
+      "failed": "No se pudo activar. Inténtalo de nuevo.",
+      "generic": "Algo salió mal. Inténtalo de nuevo."
+    }
+  },
+  "deviceStatus": {
+    "title": "Dispositivo no activo",
+    "description": "Este dispositivo ya no está activo en tu licencia. Inténtalo de nuevo o inicia sesión con otra clave.",
+    "checking": "Comprobando…",
+    "tryAgain": "Reintentar",
+    "useAnotherKey": "Usar otra clave de licencia",
+    "help": "Si necesitas ayuda, contáctanos en <support>support@usetelea.online</support>",
+    "logoAlt": "Logotipo"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "subtitle": "Personaliza tu experiencia",
+    "language": "Idioma",
+    "langEn": "Inglés",
+    "langPt": "Portugués",
+    "langEs": "Español",
+    "prompterSettingsAria": "Ajustes del teleprompter",
+    "textSpeed": "Velocidad del texto",
+    "textSize": "Tamaño del texto",
+    "textColor": "Color del texto",
+    "sizes": {
+      "small": "Pequeño",
+      "medium": "Mediano",
+      "large": "Grande"
+    },
+    "colors": {
+      "white": "Blanco",
+      "purple": "Morado",
+      "yellow": "Amarillo",
+      "green": "Verde"
+    }
+  },
+  "textList": {
+    "title": "Tus guiones",
+    "subtitle": "Selecciona un guion para cargarlo en el teleprompter",
+    "emptyTitle": "Aún no hay guiones",
+    "emptyHint": "Crea tu primer guion para empezar",
+    "newScript": "Guion nuevo",
+    "openMenuAria": "Abrir menú de guiones"
+  },
+  "updater": {
+    "title": "Nueva actualización disponible",
+    "subtitle": "Hay una nueva versión de Telea lista para instalarse.",
+    "current": "Actual",
+    "newVersion": "Nueva",
+    "downloading": "Descargando actualización…",
+    "updateNow": "Actualizar ahora",
+    "updateLater": "Actualizar más tarde",
+    "restartHint": "Telea se reiniciará automáticamente tras la instalación.",
+    "logoAlt": "Logotipo"
+  },
+  "textCard": {
+    "deleteScriptAria": "Eliminar guion"
+  },
+  "prompter": {
+    "restoreStandardAria": "Restaurar ventana estándar",
+    "pauseAria": "Pausar desplazamiento",
+    "resumeAria": "Reanudar desplazamiento",
+    "openFloatingAria": "Abrir teleprompter-flotante"
+  }
+}
