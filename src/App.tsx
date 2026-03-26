@@ -17,7 +17,7 @@ import { useUpdater } from "./hooks/use-updater";
 
 const currentWindow = getCurrentWebviewWindow();
 
-function App() {
+function MainApp() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authorizerRecheck, setAuthorizerRecheck] = useState(0);
   const [showUpdater, setShowUpdater] = useState(false);
@@ -28,8 +28,6 @@ function App() {
       setShowUpdater(true);
     }
   }, [update]);
-
-  if (currentWindow.label === Window.PROMPT) return <Prompter />;
 
   return (
     <div className="w-screen h-screen flex bg-black rounded-xl overflow-hidden">
@@ -64,6 +62,17 @@ function App() {
       />
     </div>
   );
+}
+
+function App() {
+  if (currentWindow.label === Window.PROMPT) {
+    return <Prompter variant="standard" />;
+  }
+  if (currentWindow.label === Window.FLOATING_PROMPT) {
+    return <Prompter variant="floating" />;
+  }
+
+  return <MainApp />;
 }
 
 export default App;

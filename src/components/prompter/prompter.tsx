@@ -2,32 +2,48 @@ import {
     PROMPTER_TEXT_COLOR_CLASS,
     PROMPTER_TEXT_SIZE_CLASS,
 } from "@/lib/prompter-display";
+import {
+    FLOATING_PROMPTER_READY_EVENT,
+    applyPromptWindowAboveMenubar,
+    restoreStandardPrompterFromFloating,
+    type ContentLoadedPayload,
+} from "@/lib/prompter-window";
 import { cn } from "@/lib/utils";
 import { getPrompterSettings } from "@/storage/prompter-settings";
 import { PROMPTER_SETTINGS_DEFAULTS } from "@/types/prompter-settings";
+import { Window } from "@/types/window";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { platform as getPlatform } from "@tauri-apps/plugin-os";
 import { motion, useAnimation } from "framer-motion";
-import { ArrowUpIcon, PauseIcon, PlayIcon } from "lucide-react";
+import { PauseIcon, PlayIcon, SquareArrowOutUpLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../animate-ui/components/buttons/button";
 import { Countdown } from "./countdown";
+import { FloatingPrompterButton } from "./floating-prompter-button";
 import VoiceIndicator from "./voice-indicator";
+
 const VOICE_THRESHOLD = 45;
 const VOICE_HISTORY_SIZE = 10;
 const VOICE_FREQ_MIN = 85;
 const VOICE_FREQ_MAX = 2000;
 
-export default function Prompter() {
+export type PrompterVariant = "standard" | "floating";
+
+type PrompterProps = {
+    variant?: PrompterVariant;
+};
+
+export default function Prompter({ variant = "standard" }: PrompterProps) {
+    const isFloating = variant === "floating";
     const platform = getPlatform().toUpperCase();
 
     const [settings, setSettings] = useState(() => PROMPTER_SETTINGS_DEFAULTS);
     const scrollSpeedRef = useRef(settings.scrollSpeed);
 
     const [content, setContent] = useState<string>("");
-    const [showCountdown, setShowCountdown] = useState(true);
-    const [isScrolling, setIsScrolling] = useState(false);
+    const [showCountdown, setShowCountdown] = useState(!isFloating);
+    const [isScrolling, setIsScrolling] = useState(isFloating);
     const [isPaused, setIsPaused] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isManuallyPaused, setIsManuallyPaused] = useState(false);
@@ -35,6 +51,8 @@ export default function Prompter() {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
+    const pendingInitialYRef = useRef<number | null>(null);
+    const audioGateReadyRef = useRef(false);
 
     const audioContextRef = useRef<AudioContext | null>(null);
     const analyserRef = useRef<AnalyserNode | null>(null);
@@ -45,7 +63,6 @@ export default function Prompter() {
     const isSpeakingRef = useRef<boolean>(false);
     const isManuallyPausedRef = useRef<boolean>(false);
     const isScrollingRef = useRef<boolean>(false);
-    const isResettingToTopRef = useRef<boolean>(false);
 
     useEffect(() => {
         scrollSpeedRef.current = settings.scrollSpeed;
@@ -67,7 +84,6 @@ export default function Prompter() {
         };
     }, []);
 
-    // Keep refs in sync with state for use inside event handlers
     useEffect(() => { isSpeakingRef.current = isSpeaking; }, [isSpeaking]);
     useEffect(() => { isManuallyPausedRef.current = isManuallyPaused; }, [isManuallyPaused]);
     useEffect(() => { isScrollingRef.current = isScrolling; }, [isScrolling]);
@@ -92,6 +108,13 @@ export default function Prompter() {
             voiceHistoryRef.current.push(average);
             if (voiceHistoryRef.current.length > VOICE_HISTORY_SIZE) voiceHistoryRef.current.shift();
 
+            if (voiceHistoryRef.current.length < VOICE_HISTORY_SIZE) {
+                animationFrameRef.current = requestAnimationFrame(checkAudio);
+                return;
+            }
+
+            audioGateReadyRef.current = true;
+
             const movingAvg = voiceHistoryRef.current.reduce((a, b) => a + b, 0) / voiceHistoryRef.current.length;
 
             setIsSpeaking((prev) => {
@@ -110,6 +133,7 @@ export default function Prompter() {
         const initAudio = async () => {
             try {
                 if (!navigator.mediaDevices?.getUserMedia) {
+                    audioGateReadyRef.current = true;
                     setIsSpeaking(true);
                     return;
                 }
@@ -126,9 +150,11 @@ export default function Prompter() {
                 microphoneRef.current = audioContextRef.current.createMediaStreamSource(stream);
                 microphoneRef.current.connect(analyserRef.current);
 
+                audioGateReadyRef.current = false;
                 detectVoice();
             } catch (error) {
                 console.error("Microphone error:", error);
+                audioGateReadyRef.current = true;
                 setIsSpeaking(true);
             }
         };
@@ -146,9 +172,22 @@ export default function Prompter() {
         const appWindow = getCurrentWindow();
 
         const setupListeners = async () => {
-            const unlistenContent = await appWindow.listen<{ content: string }>(
+            const applyContent = (payload: ContentLoadedPayload) => {
+                setContent(payload.content);
+                if (payload.skipCountdown) {
+                    setShowCountdown(false);
+                    setIsScrolling(true);
+                }
+                if (payload.initialY !== undefined) {
+                    pendingInitialYRef.current = payload.initialY;
+                } else {
+                    pendingInitialYRef.current = null;
+                }
+            };
+
+            const unlistenContent = await appWindow.listen<ContentLoadedPayload>(
                 "content-loaded",
-                (event) => setContent(event.payload.content)
+                (event) => applyContent(event.payload)
             );
 
             const unlistenClose = await appWindow.listen("close-prompter", async () => {
@@ -156,12 +195,24 @@ export default function Prompter() {
                 setTimeout(() => appWindow.close(), 1000);
             });
 
-            await appWindow.emit("prompter-ready", {});
+            await appWindow.emit(
+                isFloating ? FLOATING_PROMPTER_READY_EVENT : "prompter-ready",
+                {}
+            );
             return { unlistenContent, unlistenClose };
         };
 
         const unlistenPromise = setupListeners();
-        setTimeout(() => appWindow.show(), 15);
+        setTimeout(async () => {
+            appWindow.show();
+            if (!isFloating) {
+                try {
+                    await applyPromptWindowAboveMenubar(Window.PROMPT);
+                } catch (error) {
+                    console.error("Failed to reassert prompt window level:", error);
+                }
+            }
+        }, 25);
 
         return () => {
             unlistenPromise.then(({ unlistenContent, unlistenClose }) => {
@@ -169,7 +220,7 @@ export default function Prompter() {
                 unlistenClose();
             });
         };
-    }, []);
+    }, [isFloating]);
 
     const handleCountdownComplete = () => {
         setShowCountdown(false);
@@ -179,15 +230,44 @@ export default function Prompter() {
     useEffect(() => {
         if (!isScrolling || !containerRef.current) return;
 
-        const container = containerRef.current;
-        const scrollHeight = container.scrollHeight - container.clientHeight;
-        const duration = scrollHeight / scrollSpeedRef.current;
+        const frame = requestAnimationFrame(() => {
+            const container = containerRef.current;
+            if (!container) return;
 
-        controls.start({ y: -scrollHeight, transition: { duration, ease: "linear" } });
+            const scrollHeight = container.scrollHeight - container.clientHeight;
+            const pending = pendingInitialYRef.current;
+
+            if (pending !== null) {
+                if (scrollHeight <= 0) return;
+                const y = Math.min(0, Math.max(-scrollHeight, pending));
+                pendingInitialYRef.current = null;
+                pausedAtRef.current = y;
+                controls.set({ y });
+                if (!isManuallyPausedRef.current && isSpeakingRef.current) {
+                    const remainingDistance = scrollHeight - Math.abs(y);
+                    const remainingDuration = remainingDistance / scrollSpeedRef.current;
+                    if (remainingDuration > 0) {
+                        controls.start({ y: -scrollHeight, transition: { duration: remainingDuration, ease: "linear" } });
+                    }
+                }
+                return;
+            }
+
+            if (!isSpeakingRef.current) {
+                controls.stop();
+                controls.set({ y: pausedAtRef.current });
+                return;
+            }
+
+            const duration = scrollHeight / scrollSpeedRef.current;
+            controls.start({ y: -scrollHeight, transition: { duration, ease: "linear" } });
+        });
+
+        return () => cancelAnimationFrame(frame);
     }, [isScrolling, content]);
 
     useEffect(() => {
-        if (!isScrolling || isPaused || isManuallyPaused || isResettingToTopRef.current) return;
+        if (!isScrolling || isPaused || isManuallyPaused) return;
 
         if (isSpeaking) {
             const container = containerRef.current;
@@ -263,7 +343,6 @@ export default function Prompter() {
         pausedAtRef.current = newY;
         controls.set({ y: newY });
 
-        // Resume auto-scroll if speaking and not manually paused
         if (!isManuallyPausedRef.current && isSpeakingRef.current) {
             resumeFrom(newY);
         }
@@ -284,31 +363,36 @@ export default function Prompter() {
         }
     };
 
-    const handleScrollUp = () => {
-        if (!isScrolling) return;
-        isResettingToTopRef.current = true;
-        controls.stop();
-        pausedAtRef.current = 0;
-        controls
-            .start({ y: 0, transition: { duration: 0.3, ease: "easeIn" } })
-            .then(() => {
-                isResettingToTopRef.current = false;
-                if (!isManuallyPausedRef.current && isSpeakingRef.current) {
-                    resumeFrom(0);
-                }
-            })
-            .catch(() => {
-                isResettingToTopRef.current = false;
-            });
+    const handleRestoreStandard = () => {
+        void restoreStandardPrompterFromFloating({
+            content,
+            initialY: 0,
+        });
     };
+
+    const textContainerClass = cn(
+        "w-full absolute bottom-0 left-0 overflow-hidden px-6 pb-2 z-10",
+        isFloating ? "pt-5 h-[calc(100%-44px)] rounded-2xl" : "pt-5 rounded-b-2xl",
+        !isFloating && platform === "MACOS"
+            ? "h-[calc(100%-32px)]"
+            : !isFloating
+                ? "h-full"
+                : "",
+    );
 
     return (
         <div
-            className="w-screen h-screen relative flex items-start justify-center bg-transparent px-5 group"
+            className={cn(
+                "w-screen h-screen relative flex items-start justify-center bg-transparent group",
+                isFloating ? "px-3 py-2" : "px-5",
+            )}
         >
             <motion.div
                 key="prompter-window"
-                className="w-full h-full bg-black relative rounded-b-2xl"
+                className={cn(
+                    "w-full h-full bg-black relative",
+                    isFloating ? "rounded-2xl" : "rounded-b-2xl",
+                )}
                 style={{ willChange: "transform, opacity", transformOrigin: "top center" }}
                 initial={{
                     scaleY: 0,
@@ -355,18 +439,54 @@ export default function Prompter() {
                     },
                 }}
             >
-                <div className="absolute top-0 -left-5 w-5 h-5 overflow-hidden pointer-events-none z-50">
-                    <div className="absolute top-0 right-0 w-10 h-10 rounded-full" style={{ boxShadow: "0 0 0 100px black" }} />
-                </div>
-                <div className="absolute top-0 -right-5 w-5 h-5 overflow-hidden pointer-events-none z-50">
-                    <div className="absolute top-0 left-0 w-10 h-10 rounded-full" style={{ boxShadow: "0 0 0 100px black" }} />
-                </div>
-                <div className={cn("absolute top-0 left-0 right-0 z-50", platform === "MACOS" ? "h-[72px]" : "h-10")} style={{ background: 'linear-gradient(to bottom, black 0%, black 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, transparent 100%)' }} />
+                {isFloating && (
+                    <div className="absolute top-0 left-0 right-0 z-[60] flex h-11 items-center justify-start gap-2 rounded-t-2xl bg-transparent px-2">
+                        <Button
+                            type="button"
+                            size="icon-sm"
+                            variant="outline"
+                            className="pointer-events-auto shrink-0"
+                            onClick={handleRestoreStandard}
+                        >
+                            <SquareArrowOutUpLeft className="size-3" />
+                        </Button>
+                        <div data-tauri-drag-region className="min-h-9 flex-1 flex items-center justify-center cursor-grab active:cursor-grabbing" />
+                        <Button
+                            size="icon-sm"
+                            variant="outline"
+                            onClick={handleToggleManualPause}
+                            className="pointer-events-auto"
+                        >
+                            {isManuallyPaused ? <PlayIcon className="size-3" fill="currentColor" /> : <PauseIcon className="size-3" fill="currentColor" />}
+                        </Button>
+                    </div>
+                )}
+                {!isFloating && (
+                    <>
+                        <div className="absolute top-0 -left-5 w-5 h-5 overflow-hidden pointer-events-none z-50">
+                            <div className="absolute top-0 right-0 w-10 h-10 rounded-full" style={{ boxShadow: "0 0 0 100px black" }} />
+                        </div>
+                        <div className="absolute top-0 -right-5 w-5 h-5 overflow-hidden pointer-events-none z-50">
+                            <div className="absolute top-0 left-0 w-10 h-10 rounded-full" style={{ boxShadow: "0 0 0 100px black" }} />
+                        </div>
+                    </>
+                )}
+                <div
+                    className={cn(
+                        "absolute top-0 left-0 right-0 z-50",
+                        isFloating ? "top-11 h-[56px]" : platform === "MACOS" ? "h-[72px]" : "h-10",
+                    )}
+                    style={{
+                        background: isFloating
+                            ? "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.8) 15%, rgba(0,0,0,0.6) 32%, rgba(0,0,0,0.4) 48%, rgba(0,0,0,0.2) 64%, rgba(0,0,0,0.05) 78%, rgba(0,0,0,0.02) 90%, transparent 100%)"
+                            : "linear-gradient(to bottom, black 0%, black 40%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,0.4) 80%, transparent 100%)",
+                    }}
+                />
                 <VoiceIndicator isSpeaking={isSpeaking} visible={!showCountdown} />
-                {showCountdown && <Countdown onComplete={handleCountdownComplete} />}
+                {!isFloating && showCountdown && <Countdown onComplete={handleCountdownComplete} />}
                 <div
                     ref={containerRef}
-                    className={cn("w-full absolute bottom-0 left-0 overflow-hidden px-6 pt-5 pb-2 rounded-b-2xl z-10", platform === "MACOS" ? "h-[calc(100%-32px)]" : "h-full")}
+                    className={textContainerClass}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                     onWheel={handleWheel}
@@ -393,7 +513,7 @@ export default function Prompter() {
                         </p>
                     </motion.div>
                 </div>
-                {!showCountdown && (
+                {!showCountdown && !isFloating && (
                     <div className="absolute bottom-0 left-0 right-0 h-14 flex items-end justify-between p-2 rounded-b-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 pointer-events-none">
                         <Button
                             size="icon-sm"
@@ -403,14 +523,12 @@ export default function Prompter() {
                         >
                             {isManuallyPaused ? <PlayIcon className="size-3" fill="currentColor" /> : <PauseIcon className="size-3" fill="currentColor" />}
                         </Button>
-                        <Button
-                            size="icon-sm"
-                            variant="outline"
-                            onClick={handleScrollUp}
-                            className="pointer-events-auto"
-                        >
-                            <ArrowUpIcon className="size-3" />
-                        </Button>
+                        <FloatingPrompterButton
+                            getTransferPayload={() => ({
+                                content,
+                                initialY: 0,
+                            })}
+                        />
                     </div>
                 )}
             </motion.div>

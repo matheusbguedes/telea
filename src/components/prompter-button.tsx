@@ -1,72 +1,110 @@
 import { Button } from "@/components/animate-ui/components/buttons/button";
 import { useTextContext } from "@/contexts/text-context";
 import { cn } from "@/lib/utils";
+import {
+  FLOATING_PROMPTER_READY_EVENT,
+  PROMPT_WINDOW_OPENED_EVENT,
+  applyPromptWindowAboveMenubar,
+  closeFloatingPromptIfExists,
+  closeStandardPromptIfExists,
+  createStandardPromptWebview,
+  getStandardPromptWindowX,
+} from "@/lib/prompter-window";
 import { getTextById } from "@/storage/text";
 import { Window } from "@/types/window";
-import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { currentMonitor } from "@tauri-apps/api/window";
 import { PlayIcon, SquareIcon } from "lucide-react";
-import { useState } from "react";
-
-const WINDOW_CONFIG = {
-  width: 380,
-  height: 125,
-  y: 0,
-} as const;
-
-async function createPromptWindow(x: number): Promise<WebviewWindow> {
-  return new WebviewWindow(Window.PROMPT, {
-    url: "/",
-    title: "Prompter",
-    width: WINDOW_CONFIG.width,
-    height: WINDOW_CONFIG.height,
-    x,
-    y: WINDOW_CONFIG.y,
-    center: false,
-    decorations: false,
-    transparent: true,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    resizable: false,
-    visible: false,
-    shadow: false,
-    contentProtected: true
-  });
-}
-
-async function getWindowPosition(): Promise<number | null> {
-  const monitor = await currentMonitor();
-
-  if (!monitor) return null;
-
-  const { scaleFactor, size, position } = monitor;
-  const screenWidth = size.width / scaleFactor;
-  const screenX = position.x / scaleFactor;
-
-  return Math.round(screenX + (screenWidth - WINDOW_CONFIG.width) / 2);
-}
+import { useEffect, useRef, useState } from "react";
 
 export function PrompterButton() {
   const { selectedText } = useTextContext();
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [promptAlive, setPromptAlive] = useState(false);
+  const [floatingAlive, setFloatingAlive] = useState(false);
+  const isOpen = promptAlive || floatingAlive;
+
+  const promptWindowRef = useRef<WebviewWindow | null>(null);
+  const floatingWindowRef = useRef<WebviewWindow | null>(null);
   const [windowRef, setWindowRef] = useState<WebviewWindow | null>(null);
+
+  const bindDestroyedListener = (w: WebviewWindow, which: "prompt" | "floating") => {
+    void w.once("tauri://destroyed", () => {
+      if (which === "prompt") {
+        promptWindowRef.current = null;
+        setPromptAlive(false);
+      } else {
+        floatingWindowRef.current = null;
+        setFloatingAlive(false);
+      }
+
+      const nextTarget = promptWindowRef.current ?? floatingWindowRef.current;
+      setWindowRef(nextTarget);
+    });
+  };
+
+  const syncWindowRef = (nextPrompt: WebviewWindow | null, nextFloating: WebviewWindow | null) => {
+    const target = nextPrompt ?? nextFloating;
+    setWindowRef(target);
+  };
+
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    let unlistenFloating: (() => void) | undefined;
+
+    listen(PROMPT_WINDOW_OPENED_EVENT, async () => {
+      const w = await WebviewWindow.getByLabel(Window.PROMPT);
+      if (!w) return;
+      promptWindowRef.current = w;
+      setPromptAlive(true);
+      syncWindowRef(w, floatingWindowRef.current);
+      bindDestroyedListener(w, "prompt");
+    }).then((fn) => {
+      unlisten = fn;
+    });
+
+    listen(FLOATING_PROMPTER_READY_EVENT, async () => {
+      const w = await WebviewWindow.getByLabel(Window.FLOATING_PROMPT);
+      if (!w) return;
+      floatingWindowRef.current = w;
+      setFloatingAlive(true);
+      syncWindowRef(promptWindowRef.current, w);
+      bindDestroyedListener(w, "floating");
+    }).then((fn) => {
+      unlistenFloating = fn;
+    });
+
+    return () => {
+      unlisten?.();
+      unlistenFloating?.();
+    };
+  }, []);
 
   const openWindow = async () => {
     if (!selectedText) return;
 
-    const x = await getWindowPosition();
+    // Evita estado "preso" se houver uma janela anterior.
+    setPromptAlive(false);
+    setFloatingAlive(false);
+    promptWindowRef.current = null;
+    floatingWindowRef.current = null;
+    setWindowRef(null);
+
+    await closeFloatingPromptIfExists();
+    await closeStandardPromptIfExists();
+
+    const x = await getStandardPromptWindowX();
     if (x === null) return;
 
-    const window = await createPromptWindow(x);
+    const window = createStandardPromptWebview(x);
+    promptWindowRef.current = window;
+    setPromptAlive(true);
     setWindowRef(window);
+    bindDestroyedListener(window, "prompt");
 
     await window.once("tauri://created", async () => {
-      setIsOpen(true);
-
       try {
-        await invoke("set_window_above_menubar", { label: Window.PROMPT });
+        await applyPromptWindowAboveMenubar(Window.PROMPT);
       } catch (error) {
         console.error("Failed to set window above menubar:", error);
       }
@@ -80,13 +118,14 @@ export function PrompterButton() {
     });
 
     await window.once("tauri://destroyed", () => {
-      setIsOpen(false);
       unlistenReady();
     });
   };
 
   const closeWindow = async () => {
-    await windowRef?.emit("close-prompter", {});
+    const target = windowRef;
+    if (!target) return;
+    await target.emit("close-prompter", {});
   };
 
   const isDisabled = !selectedText && !isOpen;
