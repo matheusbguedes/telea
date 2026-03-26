@@ -69,11 +69,11 @@
     }
   },
   "textList": {
-    "title": "Your scripts",
-    "subtitle": "Select a script to load into the prompter",
+    "title": "Scripts",
+    "subtitle": "Create, edit and organize your scripts",
     "emptyTitle": "No scripts yet",
     "emptyHint": "Create your first script to get started",
-    "newScript": "New script",
+    "new": "New",
     "openMenuAria": "Open scripts menu"
   },
   "updater": {

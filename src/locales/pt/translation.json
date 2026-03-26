@@ -69,11 +69,11 @@
     }
   },
   "textList": {
-    "title": "Seus roteiros",
-    "subtitle": "Selecione um roteiro para carregar no teleprompter",
+    "title": "Roteiros",
+    "subtitle": "Crie, edite e organize seus roteiros",
     "emptyTitle": "Nenhum roteiro ainda",
     "emptyHint": "Crie seu primeiro roteiro para começar",
-    "newScript": "Novo roteiro",
+    "new": "Novo",
     "openMenuAria": "Abrir menu de roteiros"
   },
   "updater": {

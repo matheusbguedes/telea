@@ -69,11 +69,11 @@
     }
   },
   "textList": {
-    "title": "Tus guiones",
-    "subtitle": "Selecciona un guion para cargarlo en el teleprompter",
+    "title": "Guiones",
+    "subtitle": "Crea, edita y organiza tus guiones",
     "emptyTitle": "Aún no hay guiones",
     "emptyHint": "Crea tu primer guion para empezar",
-    "newScript": "Guion nuevo",
+    "new": "Nuevo",
     "openMenuAria": "Abrir menú de guiones"
   },
   "updater": {

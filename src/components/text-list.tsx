@@ -68,7 +68,7 @@ export function TextList() {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <h2
-              className="text-xl font-bold text-white tracking-tight mb-1 select-none"
+              className="text-xl font-bold text-white tracking-tight select-none"
               style={{ fontFamily: "'Inter', system-ui, sans-serif", letterSpacing: "-0.02em" }}
             >
               {t("textList.title")}
@@ -89,9 +89,9 @@ export function TextList() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                className="flex flex-col items-center justify-center h-full text-center py-12"
+                className="flex flex-col items-center justify-center h-full text-center"
               >
-                <p className="text-sm text-white/40 select-none mb-2">
+                <p className="text-sm text-white/40 select-none">
                   {t("textList.emptyTitle")}
                 </p>
                 <p className="text-xs text-white/25 select-none">
@@ -129,12 +129,12 @@ export function TextList() {
                 setSelectedText(null);
                 setIsOpen(false);
               }}
-              className="w-full shrink-0 h-12 bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.12] text-white/80 hover:text-white transition-all duration-200 active:scale-[0.98]"
+              className="w-full shrink-0 h-12 bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10 hover:bg-purple-500/30 hover:border-purple-500/60 hover:text-white"
             >
               <span
                 className="font-medium"
               >
-                {t("textList.newScript")}
+                {t("textList.new")}
               </span>
               <PlusIcon className="size-5" />
             </Button>

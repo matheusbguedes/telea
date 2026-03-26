@@ -115,7 +115,7 @@ export function PrompterSettingsSheet() {
               transition={{ duration: 0.5, delay: 0.1 }}
             >
               <h2
-                className="text-xl font-bold text-white tracking-tight mb-1 select-none"
+                className="text-xl font-bold text-white tracking-tight select-none"
                 style={{ fontFamily: "'Inter', system-ui, sans-serif", letterSpacing: "-0.02em" }}
               >
                 {t("settings.title")}
@@ -136,6 +136,10 @@ export function PrompterSettingsSheet() {
                 </div>
                 <div className="flex flex-col gap-3">
                   <div className="w-24 h-4 bg-white/[0.08] rounded-md" />
+                  <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
+                </div>
+                <div className="flex flex-col gap-3">
+                  <div className="w-28 h-4 bg-white/[0.08] rounded-md" />
                   <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
                 </div>
               </div>
@@ -179,7 +183,6 @@ export function PrompterSettingsSheet() {
                     />
                   </div>
                 </motion.div>
-
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -258,42 +261,43 @@ export function PrompterSettingsSheet() {
                     })}
                   </div>
                 </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.35 }}
+                  className="flex flex-col gap-3"
+                >
+                  <span
+                    className="text-sm font-medium text-white/80 select-none"
+                    style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                  >
+                    {t("settings.language")}
+                  </span>
+                  <div className="flex gap-2">
+                    {APP_LOCALES.map((locale) => {
+                      const active = activeLocale === locale;
+                      return (
+                        <button
+                          key={locale}
+                          type="button"
+                          onClick={() => void selectLocale(locale)}
+                          className={cn(
+                            "flex-1 py-2.5 px-2 rounded-xl text-xs font-medium transition-all duration-200 border active:scale-[0.96] sm:text-sm",
+                            active
+                              ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
+                              : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
+                          )}
+                          style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                        >
+                          {t(LOCALE_LABEL_KEYS[locale])}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
               </>
             )}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.15 }}
-              className="flex flex-col gap-3"
-            >
-              <span
-                className="text-sm font-medium text-white/80 select-none"
-                style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-              >
-                {t("settings.language")}
-              </span>
-              <div className="flex gap-2">
-                {APP_LOCALES.map((locale) => {
-                  const active = activeLocale === locale;
-                  return (
-                    <button
-                      key={locale}
-                      type="button"
-                      onClick={() => void selectLocale(locale)}
-                      className={cn(
-                        "flex-1 py-2.5 px-2 rounded-xl text-xs font-medium transition-all duration-200 border active:scale-[0.96] sm:text-sm",
-                        active
-                          ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
-                          : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
-                      )}
-                      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-                    >
-                      {t(LOCALE_LABEL_KEYS[locale])}
-                    </button>
-                  );
-                })}
-              </div>
-            </motion.div>
           </motion.div>
         </SheetContent>
       </Sheet>
