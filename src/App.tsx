@@ -9,6 +9,7 @@ import { Window } from "@/types/window";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { useEffect, useState } from "react";
 import { Authorizer } from "./components/authorizer";
+import { DeviceStatusGate } from "./components/device-status-gate";
 import { Onboarding } from "./components/onboarding";
 import { Updater } from "./components/updater";
 import { VersionBadge } from "./components/version-badge";
@@ -18,6 +19,7 @@ const currentWindow = getCurrentWebviewWindow();
 
 function App() {
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [authorizerRecheck, setAuthorizerRecheck] = useState(0);
   const [showUpdater, setShowUpdater] = useState(false);
   const { status, update, downloadAndInstall } = useUpdater();
 
@@ -44,7 +46,13 @@ function App() {
         </header>
         <TextEditor />
       </div>
-      <Authorizer onAuthorized={() => setIsAuthorized(true)} />
+      <Authorizer
+        onAuthorized={() => setIsAuthorized(true)}
+        recheckTrigger={authorizerRecheck}
+      />
+      <DeviceStatusGate
+        onClearedDevice={() => setAuthorizerRecheck((n) => n + 1)}
+      />
       <Onboarding shouldCheckNow={isAuthorized} />
       <Updater
         isVisible={showUpdater && !!update}

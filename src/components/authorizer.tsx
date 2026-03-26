@@ -1,3 +1,4 @@
+import { TELEA_API_BASE } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { getDevice, setDevice } from "@/storage/device";
 import { fetch } from "@tauri-apps/plugin-http";
@@ -8,9 +9,10 @@ import { useEffect, useState } from "react";
 
 interface AuthorizerProps {
     onAuthorized?: () => void;
+    recheckTrigger?: number;
 }
 
-export function Authorizer({ onAuthorized }: AuthorizerProps) {
+export function Authorizer({ onAuthorized, recheckTrigger = 0 }: AuthorizerProps) {
     const [isVisible, setIsVisible] = useState<boolean>(false);
 
     const [key, setKey] = useState("");
@@ -20,7 +22,15 @@ export function Authorizer({ onAuthorized }: AuthorizerProps) {
 
     async function checkDevice() {
         const device = await getDevice();
-        if (!device.id) setIsVisible(true);
+        if (!device.id) {
+            setIsVisible(true);
+            setKey("");
+            setIsLoading(false);
+            setIsSuccess(false);
+            setError("");
+        } else {
+            setIsVisible(false);
+        }
     }
 
     async function handleSubmit() {
@@ -36,7 +46,7 @@ export function Authorizer({ onAuthorized }: AuthorizerProps) {
 
         try {
             const platform = getPlatform().toUpperCase();
-            const response = await fetch("https://telea-server-production.up.railway.app/devices", {
+            const response = await fetch(`${TELEA_API_BASE}/devices`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ licenseKey: key.trim(), platform }),
@@ -72,7 +82,7 @@ export function Authorizer({ onAuthorized }: AuthorizerProps) {
 
     useEffect(() => {
         checkDevice();
-    }, []);
+    }, [recheckTrigger]);
 
     if (!isVisible) return null;
 

@@ -147,7 +147,7 @@ export function PrompterSettingsSheet() {
                 </div>
                 <div className="flex flex-col gap-2">
                   <span className="text-xs text-white/60">Text color</span>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     {TEXT_COLORS.map(({ value, label, swatch, hex }) => {
                       const active = settings.textColor === value;
                       return (
@@ -156,7 +156,7 @@ export function PrompterSettingsSheet() {
                           size="sm"
                           type="button"
                           variant="outline"
-                          className={cn("justify-start gap-3 transition-colors",
+                          className={cn("flex-1 min-w-[5rem] justify-start gap-3 transition-colors",
                             active && "border-purple-400 text-purple-400 hover:border-purple-400 hover:text-purple-400"
                           )}
                           onClick={() => void update({ textColor: value })}
