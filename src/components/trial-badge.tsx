@@ -18,7 +18,11 @@ export function TrialBadge() {
   useEffect(() => {
     void refresh();
     window.addEventListener("trial:updated", refresh);
-    return () => window.removeEventListener("trial:updated", refresh);
+    window.addEventListener("user:updated", refresh);
+    return () => {
+      window.removeEventListener("trial:updated", refresh);
+      window.removeEventListener("user:updated", refresh);
+    };
   }, []);
 
   if (attempts === null) return null;
@@ -30,10 +34,10 @@ export function TrialBadge() {
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
-      className="w-fit px-3 py-1.5 bg-white/5 rounded-xl border border-white/10"
+      className="w-fit px-3 py-1.5 bg-purple-500/10 rounded-xl border border-purple-500/20"
     >
       <span className="flex items-center gap-1.5 text-xs select-none cursor-default">
-        <span className="text-white/30">{t("trialBadge.label")}</span>
+        <span className="text-purple-400/70">{t("trialBadge.label")}</span>
         <span className={remaining === 0 ? "text-red-400/70" : remaining <= 2 ? "text-yellow-400/70" : "text-white/50"}>
           {remaining}/{MAX_TRIAL_ATTEMPTS}
         </span>

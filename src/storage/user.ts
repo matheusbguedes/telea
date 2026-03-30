@@ -18,4 +18,5 @@ export async function getUser(): Promise<User> {
 export async function setUser(user: User): Promise<void> {
   await store.set("user", user);
   await store.save();
+  window.dispatchEvent(new Event("user:updated"));
 }
