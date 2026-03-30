@@ -10,10 +10,7 @@ export function TrialBadge() {
 
   async function refresh() {
     const user = await getUser();
-    if (user.is_paid || !user.id) {
-      setAttempts(null);
-      return;
-    }
+    if (user.is_paid) return setAttempts(null);
     const count = await getTrialAttempts();
     setAttempts(count);
   }
