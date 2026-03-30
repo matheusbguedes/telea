@@ -33,17 +33,34 @@
       "timeout": "Tempo de conexão esgotado. Tente novamente.",
       "invalidKey": "Chave de licença inválida.",
       "failed": "Não foi possível ativar. Tente novamente.",
-      "generic": "Algo deu errado. Tente novamente."
+      "generic": "Algo deu errado. Tente novamente.",
+      "maxDevicesForTrial": "Contas de teste só podem ter um dispositivo ativo."
     }
   },
   "deviceStatus": {
     "title": "Dispositivo inativo",
-    "description": "Este dispositivo não está mais ativo na sua licença. Tente novamente ou use outra chave.",
+    "description": "Este dispositivo não está mais ativo na sua licença. Tente novamente ou gerencie seus dispositivos.",
     "checking": "Verificando…",
     "tryAgain": "Tentar novamente",
+    "manageDevices": "Gerenciar dispositivos",
+    "loadingDevices": "Carregando dispositivos…",
     "useAnotherKey": "Usar outra chave de licença",
+    "manageError": "Não foi possível carregar os dispositivos. Tente novamente.",
     "help": "Precisa de ajuda? Fale conosco em <support>support@usetelea.online</support>",
     "logoAlt": "Logotipo"
+  },
+  "deviceManager": {
+    "title": "Dispositivos ativos",
+    "subtitle": "Desative um dispositivo para ativar este.",
+    "logoAlt": "Logotipo",
+    "deactivate": "Desativar",
+    "back": "Voltar",
+    "noDevices": "Nenhum dispositivo ativo encontrado.",
+    "activationSuccess": "Dispositivo ativado",
+    "errors": {
+      "activationFailed": "Não foi possível ativar este dispositivo. Tente novamente.",
+      "generic": "Algo deu errado. Tente novamente."
+    }
   },
   "settings": {
     "title": "Configurações",
@@ -89,6 +106,18 @@
   },
   "textCard": {
     "deleteScriptAria": "Excluir roteiro"
+  },
+  "trialBadge": {
+    "label": "Teste gratuito"
+  },
+  "trialExpired": {
+    "title": "Seu período de teste acabou",
+    "subtitle": "Você usou todas as 5 sessões gratuitas. Para continuar, adquira uma licença paga.",
+    "cta": "Adquirir licença paga",
+    "opening": "Abrindo…",
+    "alreadyHaveKey": "Já tenho uma chave de licença",
+    "help": "Precisa de ajuda? Fale conosco em <support>support@usetelea.online</support>",
+    "logoAlt": "Logotipo"
   },
   "prompter": {
     "restoreStandardAria": "Restaurar para a janela padrão",

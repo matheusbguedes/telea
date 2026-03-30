@@ -1,9 +1,13 @@
-import { fetchDeviceStatus } from "@/lib/api";
+import { DeviceManagerOverlay } from "@/components/device-manager-overlay";
+import { fetchDeviceStatus, probeDevicesForLicenseKey } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { clearDevice, getDevice } from "@/storage/device";
-import { DeviceStatus } from "@/types/device";
-import { motion } from "framer-motion";
-import { Loader2, RefreshCw } from "lucide-react";
+import { clearDevice, getDevice, setDevice } from "@/storage/device";
+import { getUser, setUser } from "@/storage/user";
+import { DeviceListItem, DeviceStatus } from "@/types/device";
+import { openUrl } from "@tauri-apps/plugin-opener";
+import { platform as getPlatform } from "@tauri-apps/plugin-os";
+import { AnimatePresence, motion } from "framer-motion";
+import { Loader2, Monitor, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -11,10 +15,18 @@ interface DeviceStatusGateProps {
   onClearedDevice?: () => void;
 }
 
+type GateView = "inactive" | "loading-devices" | "device-manager";
+
 export function DeviceStatusGate({ onClearedDevice }: DeviceStatusGateProps) {
   const { t } = useTranslation();
   const [showInactive, setShowInactive] = useState(false);
   const [isRechecking, setIsRechecking] = useState(false);
+  const [gateView, setGateView] = useState<GateView>("inactive");
+  const [probeError, setProbeError] = useState("");
+  const [manageDevices, setManageDevices] = useState<{
+    devices: DeviceListItem[];
+    currentDeviceId: string;
+  } | null>(null);
 
   const verify = useCallback(async () => {
     const device = await getDevice();
@@ -25,15 +37,11 @@ export function DeviceStatusGate({ onClearedDevice }: DeviceStatusGateProps) {
 
     try {
       const result = await fetchDeviceStatus(device.id);
-
       const isActive = result.status === DeviceStatus.ACTIVE;
-
-      if (isActive) setShowInactive(false);
-      else setShowInactive(true);
+      setShowInactive(!isActive);
     } catch {
       const isActive = device.status === DeviceStatus.ACTIVE;
-      if (isActive) setShowInactive(false);
-      else setShowInactive(true);
+      setShowInactive(!isActive);
     }
   }, []);
 
@@ -56,7 +64,69 @@ export function DeviceStatusGate({ onClearedDevice }: DeviceStatusGateProps) {
     onClearedDevice?.();
   }
 
+  async function handleManageDevices() {
+    setGateView("loading-devices");
+    setProbeError("");
+
+    try {
+      const user = await getUser();
+      const device = await getDevice();
+
+      if (!user.license_key) {
+        setGateView("inactive");
+        setProbeError(t("deviceStatus.manageError"));
+        return;
+      }
+
+      const platform = getPlatform().toUpperCase();
+      const result = await probeDevicesForLicenseKey(user.license_key, platform);
+
+      if (result.type === "activated") {
+        await setUser({
+          id: result.device.user?.id ?? "",
+          name: result.device.user?.name ?? "",
+          email: result.device.user?.email ?? "",
+          license_key: user.license_key,
+          is_paid: result.device.user?.is_paid ?? false,
+        });
+        await setDevice({
+          id: result.device.id,
+          name: result.device.name,
+          licenseKey: user.license_key,
+        });
+        setShowInactive(false);
+        return;
+      }
+
+      setManageDevices({ devices: result.devices, currentDeviceId: device.id });
+      setGateView("device-manager");
+    } catch {
+      setGateView("inactive");
+      setProbeError(t("deviceStatus.manageError"));
+    }
+  }
+
   if (!showInactive) return null;
+
+  if (gateView === "device-manager" && manageDevices) {
+    return (
+      <DeviceManagerOverlay
+        devices={manageDevices.devices}
+        reactivateDeviceId={manageDevices.currentDeviceId}
+        onSuccess={async () => {
+          setShowInactive(false);
+          setGateView("inactive");
+          setManageDevices(null);
+        }}
+        onBack={() => {
+          setGateView("inactive");
+          setManageDevices(null);
+        }}
+      />
+    );
+  }
+
+  const isLoadingDevices = gateView === "loading-devices";
 
   return (
     <motion.div
@@ -113,11 +183,11 @@ export function DeviceStatusGate({ onClearedDevice }: DeviceStatusGateProps) {
           <motion.button
             type="button"
             onClick={() => void handleRetry()}
-            disabled={isRechecking}
+            disabled={isRechecking || isLoadingDevices}
             whileTap={{ scale: 0.98 }}
             className={cn(
               "relative w-full rounded-xl py-3.5 text-sm font-semibold text-white overflow-hidden transition-all duration-200 flex items-center justify-center gap-2",
-              isRechecking
+              isRechecking || isLoadingDevices
                 ? "bg-purple-500/60 cursor-not-allowed"
                 : "bg-purple-500 hover:bg-purple-600 cursor-pointer",
             )}
@@ -136,17 +206,48 @@ export function DeviceStatusGate({ onClearedDevice }: DeviceStatusGateProps) {
           </motion.button>
           <button
             type="button"
-            onClick={() => void handleReactivate()}
-            disabled={isRechecking}
+            onClick={() => void handleManageDevices()}
+            disabled={isRechecking || isLoadingDevices}
             className={cn(
-              "w-full rounded-xl py-3 text-sm font-medium transition-all duration-200 border",
-              isRechecking
+              "w-full rounded-xl py-3 text-sm font-medium transition-all duration-200 border flex items-center justify-center gap-2",
+              isRechecking || isLoadingDevices
                 ? "border-white/10 text-white/30 cursor-not-allowed"
                 : "border-white/[0.12] text-white/70 hover:bg-white/[0.06] cursor-pointer",
             )}
           >
+            {isLoadingDevices ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Monitor className="size-4" />
+            )}
+            {isLoadingDevices ? t("deviceStatus.loadingDevices") : t("deviceStatus.manageDevices")}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleReactivate()}
+            disabled={isRechecking || isLoadingDevices}
+            className={cn(
+              "w-full rounded-xl py-3 text-sm font-medium transition-all duration-200",
+              isRechecking || isLoadingDevices
+                ? "text-white/20 cursor-not-allowed"
+                : "text-white/40 hover:text-white/60 cursor-pointer",
+            )}
+          >
             {t("deviceStatus.useAnotherKey")}
           </button>
+          <AnimatePresence>
+            {probeError && (
+              <motion.p
+                key="probe-error"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="text-xs text-red-400 text-center pt-1"
+              >
+                {probeError}
+              </motion.p>
+            )}
+          </AnimatePresence>
         </motion.div>
         <motion.p
           initial={{ opacity: 0 }}
@@ -156,7 +257,14 @@ export function DeviceStatusGate({ onClearedDevice }: DeviceStatusGateProps) {
         >
           <Trans
             i18nKey="deviceStatus.help"
-            components={{ support: <span className="text-purple-500" /> }}
+            components={{
+              support: (
+                <span
+                  className="text-purple-500 cursor-pointer hover:text-purple-400 transition-colors"
+                  onClick={() => void openUrl("mailto:support@usetelea.online")}
+                />
+              ),
+            }}
           />
         </motion.p>
       </motion.div>

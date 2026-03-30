@@ -64,6 +64,13 @@
             "http:allow-fetch-read-body",
             "http:allow-fetch-cancel",
             {
+              "identifier": "opener:allow-open-url",
+              "allow": [
+                { "url": "https://usetelea.online" },
+                { "url": "mailto:support@usetelea.online" }
+              ]
+            },
+            {
               "identifier": "http:default",
               "allow": [
                 {

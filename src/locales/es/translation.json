@@ -33,17 +33,34 @@
       "timeout": "Se agotó el tiempo de conexión. Inténtalo de nuevo.",
       "invalidKey": "Clave de licencia no válida.",
       "failed": "No se pudo activar. Inténtalo de nuevo.",
-      "generic": "Algo salió mal. Inténtalo de nuevo."
+      "generic": "Algo salió mal. Inténtalo de nuevo.",
+      "maxDevicesForTrial": "Las cuentas de prueba solo pueden tener un dispositivo activo."
     }
   },
   "deviceStatus": {
     "title": "Dispositivo no activo",
-    "description": "Este dispositivo ya no está activo en tu licencia. Inténtalo de nuevo o inicia sesión con otra clave.",
+    "description": "Este dispositivo ya no está activo en tu licencia. Inténtalo de nuevo o gestiona tus dispositivos.",
     "checking": "Comprobando…",
     "tryAgain": "Reintentar",
+    "manageDevices": "Gestionar dispositivos",
+    "loadingDevices": "Cargando dispositivos…",
     "useAnotherKey": "Usar otra clave de licencia",
+    "manageError": "No se pudieron cargar los dispositivos. Inténtalo de nuevo.",
     "help": "Si necesitas ayuda, contáctanos en <support>support@usetelea.online</support>",
     "logoAlt": "Logotipo"
+  },
+  "deviceManager": {
+    "title": "Dispositivos activos",
+    "subtitle": "Desactiva un dispositivo para activar este.",
+    "logoAlt": "Logotipo",
+    "deactivate": "Desactivar",
+    "back": "Volver",
+    "noDevices": "No se encontraron dispositivos activos.",
+    "activationSuccess": "¡Dispositivo activado",
+    "errors": {
+      "activationFailed": "No se pudo activar este dispositivo. Inténtalo de nuevo.",
+      "generic": "Algo salió mal. Inténtalo de nuevo."
+    }
   },
   "settings": {
     "title": "Ajustes",
@@ -89,6 +106,18 @@
   },
   "textCard": {
     "deleteScriptAria": "Eliminar guion"
+  },
+  "trialBadge": {
+    "label": "Prueba gratuita"
+  },
+  "trialExpired": {
+    "title": "Fin del período de prueba",
+    "subtitle": "Has usado las 5 sesiones gratuitas. Para continuar, adquiere una licencia de pago.",
+    "cta": "Adquirir licencia de pago",
+    "opening": "Abriendo…",
+    "alreadyHaveKey": "Ya tengo una clave de licencia",
+    "help": "¿Necesitas ayuda? Contáctanos en <support>support@usetelea.online</support>",
+    "logoAlt": "Logotipo"
   },
   "prompter": {
     "restoreStandardAria": "Restaurar ventana estándar",

@@ -1,8 +1,12 @@
+import { DeviceManagerOverlay } from "@/components/device-manager-overlay";
 import { TELEA_API_BASE } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { getDevice, setDevice } from "@/storage/device";
+import { setUser } from "@/storage/user";
+import { Device, DeviceListItem, DeviceStatus } from "@/types/device";
 import { fetch } from "@tauri-apps/plugin-http";
 import { platform as getPlatform } from "@tauri-apps/plugin-os";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Loader2, PartyPopper } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -15,9 +19,8 @@ interface AuthorizerProps {
 
 function mapAuthorizerApiError(message: string, translate: (key: string) => string): string {
   const known: Record<string, string> = {
-    "Connection timed out. Please try again.": translate("authorizer.errors.timeout"),
-    "Invalid license key.": translate("authorizer.errors.invalidKey"),
-    "Failed to activate. Please try again.": translate("authorizer.errors.failed"),
+    "Invalid license key": translate("authorizer.errors.invalidKey"),
+    "Failed to activate device": translate("authorizer.errors.failed"),
   };
   return known[message] ?? translate("authorizer.errors.generic");
 }
@@ -30,6 +33,7 @@ export function Authorizer({ onAuthorized, recheckTrigger = 0 }: AuthorizerProps
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [maxDevicesData, setMaxDevicesData] = useState<{ devices: DeviceListItem[]; licenseKey: string } | null>(null);
 
   async function checkDevice() {
     const device = await getDevice();
@@ -39,6 +43,7 @@ export function Authorizer({ onAuthorized, recheckTrigger = 0 }: AuthorizerProps
       setIsLoading(false);
       setIsSuccess(false);
       setError("");
+      setMaxDevicesData(null);
     } else {
       setIsVisible(false);
     }
@@ -66,26 +71,30 @@ export function Authorizer({ onAuthorized, recheckTrigger = 0 }: AuthorizerProps
       clearTimeout(timeout);
 
       if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as { message?: string } | null;
-        const raw = typeof data?.message === "string" ? data.message : t("authorizer.errors.invalidKey");
-        throw new Error(raw);
+        const data = (await response.json().catch(() => null)) as {
+          error?: string;
+          user?: { devices: DeviceListItem[] };
+        } | null;
+        const errorMsg = typeof data?.error === "string" ? data.error : "";
+
+        if (errorMsg === "Max devices reached" && data?.user?.devices) {
+          const active = data.user.devices.filter((d) => d.status === DeviceStatus.ACTIVE);
+          setMaxDevicesData({ devices: active, licenseKey: key.trim() });
+          setIsLoading(false);
+          return;
+        }
+
+        if (errorMsg === "Max devices reached for trial user") {
+          setError(t("authorizer.errors.maxDevicesForTrial"));
+          setIsLoading(false);
+          return;
+        }
+
+        throw new Error(errorMsg);
       }
 
-      const data = (await response.json()) as {
-        device: { id: string; name: string };
-      };
-      setIsSuccess(true);
-
-      await setDevice({
-        id: data.device.id,
-        name: data.device.name,
-        licenseKey: key.trim(),
-      });
-
-      setTimeout(() => {
-        setIsVisible(false);
-        onAuthorized?.();
-      }, 1500);
+      const data = (await response.json()) as { device: Device };
+      await activateWithDevice(data.device, key.trim());
     } catch (err: unknown) {
       clearTimeout(timeout);
       const raw = err instanceof Error ? err.message : "";
@@ -95,11 +104,49 @@ export function Authorizer({ onAuthorized, recheckTrigger = 0 }: AuthorizerProps
     }
   }
 
+  async function activateWithDevice(device: Device, licenseKey: string) {
+    setIsSuccess(true);
+
+    await setUser({
+      id: device.user?.id ?? "",
+      name: device.user?.name ?? "",
+      email: device.user?.email ?? "",
+      license_key: licenseKey,
+      is_paid: device.user?.is_paid ?? false,
+    });
+
+    await setDevice({
+      id: device.id,
+      name: device.name,
+      licenseKey,
+    });
+
+    setTimeout(() => {
+      setIsVisible(false);
+      setMaxDevicesData(null);
+      onAuthorized?.();
+    }, 1500);
+  }
+
   useEffect(() => {
     void checkDevice();
   }, [recheckTrigger]);
 
   if (!isVisible) return null;
+
+  if (maxDevicesData) {
+    return (
+      <DeviceManagerOverlay
+        devices={maxDevicesData.devices}
+        licenseKey={maxDevicesData.licenseKey}
+        onSuccess={async (device) => {
+          if (!device) return;
+          await activateWithDevice(device, maxDevicesData.licenseKey);
+        }}
+        onBack={() => setMaxDevicesData(null)}
+      />
+    );
+  }
 
   return (
     <motion.div
@@ -258,7 +305,14 @@ export function Authorizer({ onAuthorized, recheckTrigger = 0 }: AuthorizerProps
         >
           <Trans
             i18nKey="authorizer.help"
-            components={{ support: <span className="text-purple-500" /> }}
+            components={{
+              support: (
+                <span
+                  className="text-purple-500 cursor-pointer hover:text-purple-400 transition-colors"
+                  onClick={() => void openUrl("mailto:support@usetelea.online")}
+                />
+              ),
+            }}
           />
         </motion.p>
       </motion.div>

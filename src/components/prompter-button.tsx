@@ -1,4 +1,5 @@
 import { Button } from "@/components/animate-ui/components/buttons/button";
+import { TrialExpired } from "@/components/trial-expired";
 import { useTextContext } from "@/contexts/text-context";
 import { cn } from "@/lib/utils";
 import {
@@ -11,6 +12,8 @@ import {
   getStandardPromptWindowPosition,
 } from "@/lib/prompter-window";
 import { getTextById } from "@/storage/text";
+import { incrementTrialAttempts, isTrialExpired } from "@/storage/trial";
+import { getUser } from "@/storage/user";
 import { Window } from "@/types/window";
 import { listen } from "@tauri-apps/api/event";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
@@ -22,6 +25,7 @@ export function PrompterButton() {
 
   const [promptAlive, setPromptAlive] = useState(false);
   const [floatingAlive, setFloatingAlive] = useState(false);
+  const [showTrialExpired, setShowTrialExpired] = useState(false);
   const isOpen = promptAlive || floatingAlive;
 
   const promptWindowRef = useRef<WebviewWindow | null>(null);
@@ -83,6 +87,17 @@ export function PrompterButton() {
   const openWindow = async () => {
     if (!selectedText) return;
 
+    const user = await getUser();
+    if (!user.is_paid) {
+      const expired = await isTrialExpired();
+      if (expired) {
+        setShowTrialExpired(true);
+        return;
+      }
+      await incrementTrialAttempts();
+      window.dispatchEvent(new Event("trial:updated"));
+    }
+
     // Evita estado "preso" se houver uma janela anterior.
     setPromptAlive(false);
     setFloatingAlive(false);
@@ -96,13 +111,13 @@ export function PrompterButton() {
     const pos = await getStandardPromptWindowPosition();
     if (pos === null) return;
 
-    const window = createStandardPromptWebview(pos.x, pos.y);
-    promptWindowRef.current = window;
+    const promptWebview = createStandardPromptWebview(pos.x, pos.y);
+    promptWindowRef.current = promptWebview;
     setPromptAlive(true);
-    setWindowRef(window);
-    bindDestroyedListener(window, "prompt");
+    setWindowRef(promptWebview);
+    bindDestroyedListener(promptWebview, "prompt");
 
-    await window.once("tauri://created", async () => {
+    await promptWebview.once("tauri://created", async () => {
       try {
         await applyPromptWindowAboveMenubar(Window.PROMPT);
       } catch (error) {
@@ -110,14 +125,14 @@ export function PrompterButton() {
       }
     });
 
-    const unlistenReady = await window.listen("prompter-ready", async () => {
+    const unlistenReady = await promptWebview.listen("prompter-ready", async () => {
       const text = await getTextById(selectedText.id);
       if (!text) return;
 
-      await window.emit("content-loaded", { content: text.content });
+      await promptWebview.emit("content-loaded", { content: text.content });
     });
 
-    await window.once("tauri://destroyed", () => {
+    await promptWebview.once("tauri://destroyed", () => {
       unlistenReady();
     });
   };
@@ -131,17 +146,22 @@ export function PrompterButton() {
   const isDisabled = !selectedText && !isOpen;
 
   return (
-    <Button
-      size="icon"
-      variant="outline"
-      onClick={() => isOpen ? closeWindow() : openWindow()}
-      disabled={isDisabled}
-      className={cn(isOpen ? "text-purple-500 border-purple-500/30" : "")}
-    >
-      {isOpen
-        ? <SquareIcon className="size-4" fill="currentColor" />
-        : <PlayIcon className="size-4" fill="currentColor" />
-      }
-    </Button>
+    <>
+      {showTrialExpired && (
+        <TrialExpired onEnterLicenseKey={() => setShowTrialExpired(false)} />
+      )}
+      <Button
+        size="icon"
+        variant="outline"
+        onClick={() => isOpen ? closeWindow() : openWindow()}
+        disabled={isDisabled}
+        className={cn(isOpen ? "text-purple-500 border-purple-500/30" : "")}
+      >
+        {isOpen
+          ? <SquareIcon className="size-4" fill="currentColor" />
+          : <PlayIcon className="size-4" fill="currentColor" />
+        }
+      </Button>
+    </>
   );
 }

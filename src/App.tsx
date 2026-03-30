@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { Authorizer } from "./components/authorizer";
 import { DeviceStatusGate } from "./components/device-status-gate";
 import { Onboarding } from "./components/onboarding";
+import { TrialBadge } from "./components/trial-badge";
 import { Updater } from "./components/updater";
 import { VersionBadge } from "./components/version-badge";
 import { useUpdater } from "./hooks/use-updater";
@@ -20,6 +21,12 @@ const currentWindow = getCurrentWebviewWindow();
 function MainApp() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authorizerRecheck, setAuthorizerRecheck] = useState(0);
+
+  useEffect(() => {
+    const handler = () => setAuthorizerRecheck((n) => n + 1);
+    window.addEventListener("authorizer:recheck", handler);
+    return () => window.removeEventListener("authorizer:recheck", handler);
+  }, []);
   const [showUpdater, setShowUpdater] = useState(false);
   const { status, update, downloadAndInstall } = useUpdater();
 
@@ -39,7 +46,10 @@ function MainApp() {
             <TextList />
             <PrompterSettingsSheet />
           </div>
-          <VersionBadge />
+          <div className="flex items-center gap-2">
+            <VersionBadge />
+            <TrialBadge />
+          </div>
           <PrompterButton />
         </header>
         <TextEditor />
