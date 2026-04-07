@@ -73,6 +73,10 @@
     "textSpeed": "Text speed",
     "textSize": "Text size",
     "textColor": "Text color",
+    "preserveFormatting": "Preserve formatting",
+    "preserveFormattingTooltip": "When enabled, line breaks and extra spaces in your script are preserved in the prompter exactly as typed.",
+    "on": "On",
+    "off": "Off",
     "sizes": {
       "small": "Small",
       "medium": "Medium",

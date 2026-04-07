@@ -73,6 +73,10 @@
     "textSpeed": "Velocidade do texto",
     "textSize": "Tamanho do texto",
     "textColor": "Cor do texto",
+    "preserveFormatting": "Preservar formatação",
+    "preserveFormattingTooltip": "Quando ativado, quebras de linha e espaços extras do roteiro são preservados no teleprompter exatamente como digitados.",
+    "on": "Ligado",
+    "off": "Desligado",
     "sizes": {
       "small": "Pequeno",
       "medium": "Médio",

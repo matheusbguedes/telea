@@ -7,8 +7,8 @@ import { usePrompterSettings } from "@/stores/use-prompter-settings";
 import { APP_LOCALES, type AppLocale, isAppLocale } from "@/types/app-locale";
 import type { PrompterTextColor, PrompterTextSize } from "@/types/prompter-settings";
 import { motion } from "framer-motion";
-import { Settings2Icon } from "lucide-react";
-import { useState } from "react";
+import { CircleHelpIcon, Settings2Icon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const SPEEDS = { min: 10, max: 50, step: 1 } as const;
@@ -32,10 +32,18 @@ const LOCALE_LABEL_KEYS: Record<AppLocale, string> = {
   es: "settings.langEs",
 };
 
-export function PrompterSettingsSheet() {
+type PrompterSettingsSheetProps = {
+  disabled?: boolean;
+};
+
+export function PrompterSettingsSheet({ disabled = false }: PrompterSettingsSheetProps) {
   const { t } = useTranslation();
   const { settings, ready, update } = usePrompterSettings();
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (disabled && isOpen) setIsOpen(false);
+  }, [disabled, isOpen]);
 
   const speedPct =
     ((settings.scrollSpeed - SPEEDS.min) / (SPEEDS.max - SPEEDS.min)) * 100;
@@ -93,6 +101,7 @@ export function PrompterSettingsSheet() {
           <Button
             variant="outline"
             size="icon"
+            disabled={disabled}
             aria-label={t("settings.prompterSettingsAria")}
           >
             <Settings2Icon className="size-4" />
@@ -108,12 +117,13 @@ export function PrompterSettingsSheet() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="flex flex-col min-h-0 h-full pt-12 pb-6 px-6 gap-8"
+            className="flex flex-col min-h-0 h-full pt-12 px-6 gap-6"
           >
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
+              className="shrink-0"
             >
               <h2
                 className="text-xl font-bold text-white tracking-tight select-none"
@@ -125,6 +135,7 @@ export function PrompterSettingsSheet() {
                 {t("settings.subtitle")}
               </p>
             </motion.div>
+            <div className="flex-1 overflow-y-auto pb-6 min-h-0 scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {!ready ? (
               <div className="w-full flex flex-col gap-8 animate-pulse">
                 <div className="flex flex-col gap-3">
@@ -145,7 +156,7 @@ export function PrompterSettingsSheet() {
                 </div>
               </div>
             ) : (
-              <>
+              <div className="flex flex-col gap-8">
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -262,11 +273,58 @@ export function PrompterSettingsSheet() {
                     })}
                   </div>
                 </motion.div>
-
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.35 }}
+                  className="flex flex-col gap-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="text-sm font-medium text-white/80 select-none"
+                      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                    >
+                      {t("settings.preserveFormatting")}
+                    </span>
+                    <div className="relative group/tooltip">
+                      <CircleHelpIcon className="size-3.5 text-white/40 cursor-help" />
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 pointer-events-none z-50 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200">
+                        <div
+                          className="bg-zinc-900/90 border border-white/[0.15] rounded-lg px-3 py-2 text-xs text-white/90 leading-relaxed shadow-xl z-50"
+                          style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                        >
+                          {t("settings.preserveFormattingTooltip")}
+                        </div>
+                        <div className="w-2 h-2 bg-zinc-900/90 border-r border-b border-white/[0.15] rotate-45 mx-auto -mt-1" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {([true, false] as const).map((value) => {
+                      const active = settings.preserveFormatting === value;
+                      return (
+                        <button
+                          key={String(value)}
+                          type="button"
+                          onClick={() => void update({ preserveFormatting: value })}
+                          className={cn(
+                            "flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 border active:scale-[0.96]",
+                            active
+                              ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
+                              : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
+                          )}
+                          style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                        >
+                          {t(value ? "settings.on" : "settings.off")}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.40 }}
                   className="flex flex-col gap-3"
                 >
                   <span
@@ -297,8 +355,9 @@ export function PrompterSettingsSheet() {
                     })}
                   </div>
                 </motion.div>
-              </>
+              </div>
             )}
+            </div>
           </motion.div>
         </SheetContent>
       </Sheet>

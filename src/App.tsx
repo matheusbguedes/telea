@@ -19,6 +19,7 @@ import { useUpdater } from "./hooks/use-updater";
 const currentWindow = getCurrentWebviewWindow();
 
 function MainApp() {
+  const [isPrompterOpen, setIsPrompterOpen] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authorizerRecheck, setAuthorizerRecheck] = useState(0);
 
@@ -44,13 +45,13 @@ function MainApp() {
         <header className="w-full flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TextList />
-            <PrompterSettingsSheet />
+            <PrompterSettingsSheet disabled={isPrompterOpen} />
           </div>
           <div className="flex items-center gap-2">
             <VersionBadge />
             <TrialBadge />
           </div>
-          <PrompterButton />
+          <PrompterButton onIsOpenChange={setIsPrompterOpen} />
         </header>
         <TextEditor />
       </div>

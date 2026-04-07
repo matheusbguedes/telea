@@ -73,6 +73,10 @@
     "textSpeed": "Velocidad del texto",
     "textSize": "Tamaño del texto",
     "textColor": "Color del texto",
+    "preserveFormatting": "Conservar formato",
+    "preserveFormattingTooltip": "Cuando está activado, los saltos de línea y espacios extra del guion se conservan en el teleprompter tal como fueron escritos.",
+    "on": "Activado",
+    "off": "Desactivado",
     "sizes": {
       "small": "Pequeño",
       "medium": "Mediano",

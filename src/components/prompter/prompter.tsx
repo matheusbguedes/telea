@@ -577,7 +577,8 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
                     >
                         <p
                             className={cn(
-                                "text-center text-balance font-medium leading-normal select-none cursor-default",
+                                "text-center font-medium leading-normal select-none cursor-default",
+                                settings.preserveFormatting ? "whitespace-pre-wrap" : "text-balance",
                                 PROMPTER_TEXT_SIZE_CLASS[settings.textSize],
                                 PROMPTER_TEXT_COLOR_CLASS[settings.textColor],
                             )}

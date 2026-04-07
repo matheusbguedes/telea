@@ -20,13 +20,21 @@ import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { PlayIcon, SquareIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-export function PrompterButton() {
+type PrompterButtonProps = {
+  onIsOpenChange?: (isOpen: boolean) => void;
+};
+
+export function PrompterButton({ onIsOpenChange }: PrompterButtonProps) {
   const { selectedText } = useTextContext();
 
   const [promptAlive, setPromptAlive] = useState(false);
   const [floatingAlive, setFloatingAlive] = useState(false);
   const [showTrialExpired, setShowTrialExpired] = useState(false);
   const isOpen = promptAlive || floatingAlive;
+
+  useEffect(() => {
+    onIsOpenChange?.(isOpen);
+  }, [isOpen, onIsOpenChange]);
 
   const promptWindowRef = useRef<WebviewWindow | null>(null);
   const floatingWindowRef = useRef<WebviewWindow | null>(null);
