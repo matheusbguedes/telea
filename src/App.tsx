@@ -13,6 +13,7 @@ import { DeviceStatusGate } from "./components/device-status-gate";
 import { Onboarding } from "./components/onboarding";
 import { TrialBadge } from "./components/trial-badge";
 import { Updater } from "./components/updater";
+import { WhatsNew } from "./components/whats-new";
 import { VersionBadge } from "./components/version-badge";
 import { useUpdater } from "./hooks/use-updater";
 
@@ -63,6 +64,7 @@ function MainApp() {
         onClearedDevice={() => setAuthorizerRecheck((n) => n + 1)}
       />
       <Onboarding shouldCheckNow={isAuthorized} />
+      <WhatsNew />
       <Updater
         isVisible={showUpdater && !!update}
         currentVersion={update?.currentVersion}

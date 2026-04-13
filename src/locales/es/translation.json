@@ -76,7 +76,7 @@
     "preserveFormatting": "Conservar formato",
     "preserveFormattingTooltip": "Cuando está activado, los saltos de línea y espacios extra del guion se conservan en el teleprompter tal como fueron escritos.",
     "smartScroll": "Desplazamiento inteligente",
-    "smartScrollTooltip": "Cuando está activado, la velocidad del desplazamiento se adapta al ritmo de tu voz — hablar más rápido desplaza más rápido. Esto anula la velocidad del texto.",
+    "smartScrollTooltip": "Cuando está activado, la velocidad del desplazamiento se adapta al ritmo de tu voz, hablar más rápido desplaza más rápido. Esto anula la velocidad del texto.",
     "on": "Activado",
     "off": "Desactivado",
     "sizes": {
@@ -124,6 +124,15 @@
     "alreadyHaveKey": "Ya tengo una clave de licencia",
     "help": "¿Necesitas ayuda? Contáctanos en <support>support@usetelea.online</support>",
     "logoAlt": "Logotipo"
+  },
+  "whatsNew": {
+    "badge": "Novedades en v{{version}}",
+    "v1_0_2": {
+      "slide0": {
+        "title": "Desplazamiento inteligente",
+        "description": "Cuando está activado, la velocidad del desplazamiento se adapta al ritmo de tu voz, hablar más rápido desplaza más rápido. Esto anula la velocidad del texto."
+      }
+    }
   },
   "prompter": {
     "restoreStandardAria": "Restaurar ventana estándar",

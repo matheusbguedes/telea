@@ -76,7 +76,7 @@
     "preserveFormatting": "Preservar formatação",
     "preserveFormattingTooltip": "Quando ativado, quebras de linha e espaços extras do roteiro são preservados no teleprompter exatamente como digitados.",
     "smartScroll": "Rolagem inteligente",
-    "smartScrollTooltip": "Quando ativado, a velocidade de rolagem se adapta ao ritmo da sua fala — falar mais rápido rola mais rápido. Isso sobrepõe a velocidade do texto.",
+    "smartScrollTooltip": "Quando ativado, a velocidade de rolagem se adapta ao ritmo da sua fala, falar mais rápido rola mais rápido. Isso sobrepõe a velocidade do texto.",
     "on": "Ligado",
     "off": "Desligado",
     "sizes": {
@@ -124,6 +124,15 @@
     "alreadyHaveKey": "Já tenho uma chave de licença",
     "help": "Precisa de ajuda? Fale conosco em <support>support@usetelea.online</support>",
     "logoAlt": "Logotipo"
+  },
+  "whatsNew": {
+    "badge": "Novidades da v{{version}}",
+    "v1_0_2": {
+      "slide0": {
+        "title": "Rolagem inteligente",
+        "description": "Quando ativado, a velocidade de rolagem se adapta ao ritmo da sua fala, falar mais rápido rola mais rápido. Isso sobrepõe a velocidade do texto."
+      }
+    }
   },
   "prompter": {
     "restoreStandardAria": "Restaurar para a janela padrão",

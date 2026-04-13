@@ -6,7 +6,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-const PURCHASE_URL = "https://usetelea.online";
+const PURCHASE_URL = "https://buy.stripe.com/14A00j5OR17maLE08w6EU02";
 const SUPPORT_EMAIL = "mailto:support@usetelea.online";
 
 interface TrialExpiredProps {
