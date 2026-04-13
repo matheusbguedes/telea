@@ -8,6 +8,7 @@ import { APP_LOCALES, type AppLocale, isAppLocale } from "@/types/app-locale";
 import type { PrompterTextColor, PrompterTextSize } from "@/types/prompter-settings";
 import { motion } from "framer-motion";
 import { CircleHelpIcon, Settings2Icon } from "lucide-react";
+import { Tooltip } from "radix-ui";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -295,18 +296,24 @@ export function PrompterSettingsSheet({ disabled = false }: PrompterSettingsShee
                       >
                         {t("settings.preserveFormatting")}
                       </span>
-                      <div className="relative group/tooltip">
-                        <CircleHelpIcon className="size-3.5 text-white/40 cursor-help" />
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 pointer-events-none z-50 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200">
-                          <div
-                            className="bg-zinc-900/90 border border-white/[0.15] rounded-lg px-3 py-2 text-xs text-white/90 leading-relaxed shadow-xl z-50"
-                            style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-                          >
-                            {t("settings.preserveFormattingTooltip")}
-                          </div>
-                          <div className="w-2 h-2 bg-zinc-900/90 border-r border-b border-white/[0.15] rotate-45 mx-auto -mt-1" />
-                        </div>
-                      </div>
+                      <Tooltip.Provider delayDuration={200}>
+                        <Tooltip.Root>
+                          <Tooltip.Trigger asChild>
+                            <CircleHelpIcon className="size-3.5 text-white/40 cursor-help" />
+                          </Tooltip.Trigger>
+                          <Tooltip.Portal>
+                            <Tooltip.Content
+                              side="top"
+                              sideOffset={6}
+                              className="z-[9999] max-w-[13rem] rounded-xl bg-purple-500/20 backdrop-blur-md px-3 py-2 text-xs leading-relaxed text-white/90 shadow-xl"
+                              style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                            >
+                              {t("settings.preserveFormattingTooltip")}
+                              <Tooltip.Arrow className="fill-purple-500/20" />
+                            </Tooltip.Content>
+                          </Tooltip.Portal>
+                        </Tooltip.Root>
+                      </Tooltip.Provider>
                     </div>
                     <div className="flex gap-2">
                       {([true, false] as const).map((value) => {
@@ -343,18 +350,24 @@ export function PrompterSettingsSheet({ disabled = false }: PrompterSettingsShee
                       >
                         {t("settings.smartScroll")}
                       </span>
-                      <div className="relative group/tooltip">
-                        <CircleHelpIcon className="size-3.5 text-white/40 cursor-help" />
-                        <div className="absolute bottom-full left-0 -translate-x-2 mb-2 w-56 pointer-events-none z-50 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200">
-                          <div
-                            className="bg-zinc-900/90 border border-white/[0.15] rounded-lg px-3 py-2 text-xs text-white/90 leading-relaxed shadow-xl z-50"
-                            style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-                          >
-                            {t("settings.smartScrollTooltip")}
-                          </div>
-                          <div className="w-2 h-2 bg-zinc-900/90 border-r border-b border-white/[0.15] rotate-45 ml-3 -mt-1" />
-                        </div>
-                      </div>
+                      <Tooltip.Provider delayDuration={200}>
+                        <Tooltip.Root>
+                          <Tooltip.Trigger asChild>
+                            <CircleHelpIcon className="size-3.5 text-white/40 cursor-help" />
+                          </Tooltip.Trigger>
+                          <Tooltip.Portal>
+                            <Tooltip.Content
+                              side="top"
+                              sideOffset={6}
+                              className="z-[9999] max-w-[13rem] rounded-xl bg-purple-500/20 backdrop-blur-md px-3 py-2 text-xs leading-relaxed text-white/90 shadow-xl"
+                              style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                            >
+                              {t("settings.smartScrollTooltip")}
+                              <Tooltip.Arrow className="fill-purple-500/20" />
+                            </Tooltip.Content>
+                          </Tooltip.Portal>
+                        </Tooltip.Root>
+                      </Tooltip.Provider>
                     </div>
                     <div className="flex gap-2">
                       {([true, false] as const).map((value) => {
