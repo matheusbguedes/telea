@@ -29,6 +29,17 @@ const VOICE_HISTORY_SIZE = 10;
 const VOICE_FREQ_MIN = 85;
 const VOICE_FREQ_MAX = 2000;
 
+const PACE_PEAK_THRESHOLD = VOICE_THRESHOLD * 1.2;
+const PACE_WINDOW_MS = 4000;
+const PACE_REFRACTORY_MS = 120;
+const PACE_BASELINE = 3.0;
+const PACE_MIN_MULT = 0.7;
+const PACE_MAX_MULT = 1.5;
+const PACE_EMA_ALPHA = 0.08;
+const PACE_MIN_PEAKS = 2;
+const PACE_UPDATE_MS = 200;
+const PACE_APPLY_EPSILON = 0.02;
+
 export type PrompterVariant = "standard" | "floating";
 
 type PrompterProps = {
@@ -67,10 +78,29 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
     const isScrollingRef = useRef<boolean>(false);
     const isPausedRef = useRef<boolean>(false);
     const prevMaxScrollRef = useRef<number>(0);
+    const paceEnabledRef = useRef<boolean>(false);
+    const peakTimestampsRef = useRef<number[]>([]);
+    const lastPeakAboveRef = useRef<boolean>(false);
+    const lastPeakAtRef = useRef<number>(0);
+    const paceMultRef = useRef<number>(1);
+    const appliedPaceMultRef = useRef<number>(1);
+
+    const getEffectiveSpeed = () =>
+        scrollSpeedRef.current * (paceEnabledRef.current ? paceMultRef.current : 1);
 
     useEffect(() => {
         scrollSpeedRef.current = settings.scrollSpeed;
     }, [settings.scrollSpeed]);
+
+    useEffect(() => {
+        paceEnabledRef.current = settings.smartScroll;
+        if (!settings.smartScroll) {
+            peakTimestampsRef.current = [];
+            paceMultRef.current = 1;
+            appliedPaceMultRef.current = 1;
+            lastPeakAboveRef.current = false;
+        }
+    }, [settings.smartScroll]);
 
     useEffect(() => {
         getPrompterSettings().then(setSettings);
@@ -121,6 +151,30 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
             audioGateReadyRef.current = true;
 
             const movingAvg = voiceHistoryRef.current.reduce((a, b) => a + b, 0) / voiceHistoryRef.current.length;
+
+            if (paceEnabledRef.current) {
+                const now = performance.now();
+                const above = movingAvg > PACE_PEAK_THRESHOLD;
+                if (above && !lastPeakAboveRef.current && now - lastPeakAtRef.current > PACE_REFRACTORY_MS) {
+                    peakTimestampsRef.current.push(now);
+                    lastPeakAtRef.current = now;
+                }
+                lastPeakAboveRef.current = above;
+
+                const cutoff = now - PACE_WINDOW_MS;
+                while (peakTimestampsRef.current.length > 0 && peakTimestampsRef.current[0] < cutoff) {
+                    peakTimestampsRef.current.shift();
+                }
+
+                const peakCount = peakTimestampsRef.current.length;
+                let target = 1;
+                if (peakCount >= PACE_MIN_PEAKS) {
+                    const syllablesPerSec = peakCount / (PACE_WINDOW_MS / 1000);
+                    const raw = syllablesPerSec / PACE_BASELINE;
+                    target = Math.max(PACE_MIN_MULT, Math.min(PACE_MAX_MULT, raw));
+                }
+                paceMultRef.current = paceMultRef.current * (1 - PACE_EMA_ALPHA) + target * PACE_EMA_ALPHA;
+            }
 
             setIsSpeaking((prev) => {
                 if (!prev && movingAvg > VOICE_THRESHOLD * 1.2) return true;
@@ -251,8 +305,9 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
                 prevMaxScrollRef.current = scrollHeight;
                 if (!isManuallyPausedRef.current && isSpeakingRef.current) {
                     const remainingDistance = scrollHeight - Math.abs(y);
-                    const remainingDuration = remainingDistance / scrollSpeedRef.current;
+                    const remainingDuration = remainingDistance / getEffectiveSpeed();
                     if (remainingDuration > 0) {
+                        appliedPaceMultRef.current = paceMultRef.current;
                         controls.start({ y: -scrollHeight, transition: { duration: remainingDuration, ease: "linear" } });
                     }
                 }
@@ -266,7 +321,8 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
                 return;
             }
 
-            const duration = scrollHeight / scrollSpeedRef.current;
+            const duration = scrollHeight / getEffectiveSpeed();
+            appliedPaceMultRef.current = paceMultRef.current;
             controls.start({ y: -scrollHeight, transition: { duration, ease: "linear" } });
             prevMaxScrollRef.current = scrollHeight;
         });
@@ -283,9 +339,10 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
 
             const scrollHeight = container.scrollHeight - container.clientHeight;
             const remainingDistance = scrollHeight - Math.abs(pausedAtRef.current);
-            const remainingDuration = remainingDistance / scrollSpeedRef.current;
+            const remainingDuration = remainingDistance / getEffectiveSpeed();
 
             if (remainingDuration > 0) {
+                appliedPaceMultRef.current = paceMultRef.current;
                 controls.start({ y: -scrollHeight, transition: { duration: remainingDuration, ease: "linear" } });
             }
         } else {
@@ -345,8 +402,9 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
                     !isManuallyPausedRef.current
                 ) {
                     const remainingDistance = maxNew - Math.abs(yNew);
-                    const remainingDuration = remainingDistance / scrollSpeedRef.current;
+                    const remainingDuration = remainingDistance / getEffectiveSpeed();
                     if (remainingDuration > 0) {
+                        appliedPaceMultRef.current = paceMultRef.current;
                         void controls.start({
                             y: -maxNew,
                             transition: { duration: remainingDuration, ease: "linear" },
@@ -363,6 +421,30 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
         };
     }, [isFloating, isScrolling, controls]);
 
+    useEffect(() => {
+        if (!settings.smartScroll) return;
+        if (!isScrolling || isPaused || isManuallyPaused) return;
+
+        const id = window.setInterval(() => {
+            if (!isSpeakingRef.current) return;
+            const applied = appliedPaceMultRef.current;
+            const current = paceMultRef.current;
+            if (applied <= 0) return;
+            if (Math.abs(current - applied) / applied < PACE_APPLY_EPSILON) return;
+
+            const el = containerRef.current?.firstElementChild as HTMLElement | null;
+            if (!el) return;
+            const matrix = getComputedStyle(el).transform.match(/matrix.*\((.+)\)/);
+            const y = matrix ? parseFloat(matrix[1].split(", ")[5] ?? "0") : pausedAtRef.current;
+            pausedAtRef.current = y;
+            resumeFrom(y);
+        }, PACE_UPDATE_MS);
+
+        return () => {
+            window.clearInterval(id);
+        };
+    }, [settings.smartScroll, isScrolling, isPaused, isManuallyPaused]);
+
     const getCurrentY = () => {
         const el = containerRef.current?.firstElementChild as HTMLElement | null;
         if (!el) return pausedAtRef.current;
@@ -376,8 +458,9 @@ export default function Prompter({ variant = "standard" }: PrompterProps) {
         if (!container) return;
         const scrollHeight = container.scrollHeight - container.clientHeight;
         const remainingDistance = scrollHeight - Math.abs(yPosition);
-        const remainingDuration = remainingDistance / scrollSpeedRef.current;
+        const remainingDuration = remainingDistance / getEffectiveSpeed();
         if (remainingDuration > 0) {
+            appliedPaceMultRef.current = paceMultRef.current;
             controls.start({ y: -scrollHeight, transition: { duration: remainingDuration, ease: "linear" } });
         }
     };

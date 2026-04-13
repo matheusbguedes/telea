@@ -7,6 +7,7 @@ export type PrompterSettings = {
   textSize: PrompterTextSize;
   textColor: PrompterTextColor;
   preserveFormatting: boolean;
+  smartScroll: boolean;
 };
 
 export const PROMPTER_SETTINGS_DEFAULTS: PrompterSettings = {
@@ -14,4 +15,5 @@ export const PROMPTER_SETTINGS_DEFAULTS: PrompterSettings = {
   textSize: "medium",
   textColor: "white",
   preserveFormatting: false,
+  smartScroll: false,
 };

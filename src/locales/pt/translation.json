@@ -75,6 +75,8 @@
     "textColor": "Cor do texto",
     "preserveFormatting": "Preservar formatação",
     "preserveFormattingTooltip": "Quando ativado, quebras de linha e espaços extras do roteiro são preservados no teleprompter exatamente como digitados.",
+    "smartScroll": "Rolagem inteligente",
+    "smartScrollTooltip": "Quando ativado, a velocidade de rolagem se adapta ao ritmo da sua fala — falar mais rápido rola mais rápido. Isso sobrepõe a velocidade do texto.",
     "on": "Ligado",
     "off": "Desligado",
     "sizes": {

@@ -75,6 +75,8 @@
     "textColor": "Color del texto",
     "preserveFormatting": "Conservar formato",
     "preserveFormattingTooltip": "Cuando está activado, los saltos de línea y espacios extra del guion se conservan en el teleprompter tal como fueron escritos.",
+    "smartScroll": "Desplazamiento inteligente",
+    "smartScrollTooltip": "Cuando está activado, la velocidad del desplazamiento se adapta al ritmo de tu voz — hablar más rápido desplaza más rápido. Esto anula la velocidad del texto.",
     "on": "Activado",
     "off": "Desactivado",
     "sizes": {

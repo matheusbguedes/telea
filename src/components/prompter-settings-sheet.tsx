@@ -136,227 +136,284 @@ export function PrompterSettingsSheet({ disabled = false }: PrompterSettingsShee
               </p>
             </motion.div>
             <div className="flex-1 overflow-y-auto pb-6 min-h-0 scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {!ready ? (
-              <div className="w-full flex flex-col gap-8 animate-pulse">
-                <div className="flex flex-col gap-3">
-                  <div className="w-24 h-4 bg-white/[0.08] rounded-md" />
-                  <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
-                </div>
-                <div className="flex flex-col gap-3">
-                  <div className="w-24 h-4 bg-white/[0.08] rounded-md" />
-                  <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
-                </div>
-                <div className="flex flex-col gap-3">
-                  <div className="w-24 h-4 bg-white/[0.08] rounded-md" />
-                  <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
-                </div>
-                <div className="flex flex-col gap-3">
-                  <div className="w-28 h-4 bg-white/[0.08] rounded-md" />
-                  <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-8">
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="flex flex-col gap-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <label
-                      className="text-sm font-medium text-white/80 select-none"
-                      htmlFor="scroll-speed"
-                      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-                    >
-                      {t("settings.textSpeed")}
-                    </label>
-                    <span className="text-xs font-mono text-white/60 bg-white/[0.06] px-2.5 py-1 rounded-lg tabular-nums">
-                      {settings.scrollSpeed}
-                    </span>
+              {!ready ? (
+                <div className="w-full flex flex-col gap-8 animate-pulse">
+                  <div className="flex flex-col gap-3">
+                    <div className="w-24 h-4 bg-white/[0.08] rounded-md" />
+                    <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
                   </div>
-                  <div className="px-1">
-                    <input
-                      id="scroll-speed"
-                      type="range"
-                      min={SPEEDS.min}
-                      max={SPEEDS.max}
-                      step={SPEEDS.step}
-                      value={settings.scrollSpeed}
-                      className="ps-range"
-                      style={{
-                        background: `linear-gradient(to right,
+                  <div className="flex flex-col gap-3">
+                    <div className="w-24 h-4 bg-white/[0.08] rounded-md" />
+                    <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <div className="w-24 h-4 bg-white/[0.08] rounded-md" />
+                    <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <div className="w-28 h-4 bg-white/[0.08] rounded-md" />
+                    <div className="w-full h-12 bg-white/[0.08] rounded-xl" />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-8">
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="flex flex-col gap-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <label
+                        className={cn(
+                          "text-sm font-medium select-none transition-colors",
+                          settings.smartScroll ? "text-white/30" : "text-white/80",
+                        )}
+                        htmlFor="scroll-speed"
+                        style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                      >
+                        {t("settings.textSpeed")}
+                      </label>
+                      <span
+                        className={cn(
+                          "text-xs font-mono bg-white/[0.06] px-2.5 py-1 rounded-lg tabular-nums transition-colors",
+                          settings.smartScroll ? "text-white/25" : "text-white/60",
+                        )}
+                      >
+                        {settings.scrollSpeed}
+                      </span>
+                    </div>
+                    <div className={cn("px-1", settings.smartScroll && "opacity-40")}>
+                      <input
+                        id="scroll-speed"
+                        type="range"
+                        min={SPEEDS.min}
+                        max={SPEEDS.max}
+                        step={SPEEDS.step}
+                        value={settings.scrollSpeed}
+                        disabled={settings.smartScroll}
+                        className="ps-range disabled:cursor-not-allowed"
+                        style={{
+                          background: `linear-gradient(to right,
                           #a855f7 0%,
                           #a855f7 ${speedPct}%,
                           rgba(255,255,255,0.12) ${speedPct}%,
                           rgba(255,255,255,0.12) 100%)`,
-                      }}
-                      onChange={(e) => void update({ scrollSpeed: Number(e.target.value) })}
-                    />
-                  </div>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.25 }}
-                  className="flex flex-col gap-3"
-                >
-                  <span
-                    className="text-sm font-medium text-white/80 select-none"
-                    style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                        }}
+                        onChange={(e) => void update({ scrollSpeed: Number(e.target.value) })}
+                      />
+                    </div>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.25 }}
+                    className="flex flex-col gap-3"
                   >
-                    {t("settings.textSize")}
-                  </span>
-                  <div className="flex gap-2">
-                    {TEXT_SIZE_VALUES.map((value) => {
-                      const active = settings.textSize === value;
-                      return (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => void update({ textSize: value })}
-                          className={cn(
-                            "flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 border active:scale-[0.96]",
-                            active
-                              ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
-                              : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
-                          )}
-                          style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-                        >
-                          {t(`settings.sizes.${value}`)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="flex flex-col gap-3"
-                >
-                  <span
-                    className="text-sm font-medium text-white/80 select-none"
-                    style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-                  >
-                    {t("settings.textColor")}
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {TEXT_COLORS.map(({ value, swatch, hex }) => {
-                      const active = settings.textColor === value;
-                      return (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => void update({ textColor: value })}
-                          className={cn(
-                            "flex items-center gap-2.5 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 border active:scale-[0.96]",
-                            active
-                              ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
-                              : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
-                          )}
-                          style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-                        >
-                          <span
-                            className={cn(
-                              "size-3 rounded-full ring-2 ring-black/20 transition-all duration-200",
-                              swatch,
-                              active && "scale-110",
-                            )}
-                            style={active ? { boxShadow: `0 0 0 2px ${hex}40` } : undefined}
-                            aria-hidden
-                          />
-                          {t(`settings.colors.${value}`)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.35 }}
-                  className="flex flex-col gap-3"
-                >
-                  <div className="flex items-center gap-2">
                     <span
                       className="text-sm font-medium text-white/80 select-none"
                       style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
                     >
-                      {t("settings.preserveFormatting")}
+                      {t("settings.textSize")}
                     </span>
-                    <div className="relative group/tooltip">
-                      <CircleHelpIcon className="size-3.5 text-white/40 cursor-help" />
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 pointer-events-none z-50 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200">
-                        <div
-                          className="bg-zinc-900/90 border border-white/[0.15] rounded-lg px-3 py-2 text-xs text-white/90 leading-relaxed shadow-xl z-50"
-                          style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-                        >
-                          {t("settings.preserveFormattingTooltip")}
+                    <div className="flex gap-2">
+                      {TEXT_SIZE_VALUES.map((value) => {
+                        const active = settings.textSize === value;
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => void update({ textSize: value })}
+                            className={cn(
+                              "flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 border active:scale-[0.96]",
+                              active
+                                ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
+                                : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
+                            )}
+                            style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                          >
+                            {t(`settings.sizes.${value}`)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="flex flex-col gap-3"
+                  >
+                    <span
+                      className="text-sm font-medium text-white/80 select-none"
+                      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                    >
+                      {t("settings.textColor")}
+                    </span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {TEXT_COLORS.map(({ value, swatch, hex }) => {
+                        const active = settings.textColor === value;
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => void update({ textColor: value })}
+                            className={cn(
+                              "flex items-center gap-2.5 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 border active:scale-[0.96]",
+                              active
+                                ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
+                                : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
+                            )}
+                            style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                          >
+                            <span
+                              className={cn(
+                                "size-3 rounded-full ring-2 ring-black/20 transition-all duration-200",
+                                swatch,
+                                active && "scale-110",
+                              )}
+                              style={active ? { boxShadow: `0 0 0 2px ${hex}40` } : undefined}
+                              aria-hidden
+                            />
+                            {t(`settings.colors.${value}`)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.35 }}
+                    className="flex flex-col gap-3"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-sm font-medium text-white/80 select-none"
+                        style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                      >
+                        {t("settings.preserveFormatting")}
+                      </span>
+                      <div className="relative group/tooltip">
+                        <CircleHelpIcon className="size-3.5 text-white/40 cursor-help" />
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 pointer-events-none z-50 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200">
+                          <div
+                            className="bg-zinc-900/90 border border-white/[0.15] rounded-lg px-3 py-2 text-xs text-white/90 leading-relaxed shadow-xl z-50"
+                            style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                          >
+                            {t("settings.preserveFormattingTooltip")}
+                          </div>
+                          <div className="w-2 h-2 bg-zinc-900/90 border-r border-b border-white/[0.15] rotate-45 mx-auto -mt-1" />
                         </div>
-                        <div className="w-2 h-2 bg-zinc-900/90 border-r border-b border-white/[0.15] rotate-45 mx-auto -mt-1" />
                       </div>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    {([true, false] as const).map((value) => {
-                      const active = settings.preserveFormatting === value;
-                      return (
-                        <button
-                          key={String(value)}
-                          type="button"
-                          onClick={() => void update({ preserveFormatting: value })}
-                          className={cn(
-                            "flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 border active:scale-[0.96]",
-                            active
-                              ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
-                              : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
-                          )}
-                          style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-                        >
-                          {t(value ? "settings.on" : "settings.off")}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.40 }}
-                  className="flex flex-col gap-3"
-                >
-                  <span
-                    className="text-sm font-medium text-white/80 select-none"
-                    style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                    <div className="flex gap-2">
+                      {([true, false] as const).map((value) => {
+                        const active = settings.preserveFormatting === value;
+                        return (
+                          <button
+                            key={String(value)}
+                            type="button"
+                            onClick={() => void update({ preserveFormatting: value })}
+                            className={cn(
+                              "flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 border active:scale-[0.96]",
+                              active
+                                ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
+                                : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
+                            )}
+                            style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                          >
+                            {t(value ? "settings.on" : "settings.off")}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.375 }}
+                    className="flex flex-col gap-3"
                   >
-                    {t("settings.language")}
-                  </span>
-                  <div className="flex gap-2">
-                    {APP_LOCALES.map((locale) => {
-                      const active = activeLocale === locale;
-                      return (
-                        <button
-                          key={locale}
-                          type="button"
-                          onClick={() => void selectLocale(locale)}
-                          className={cn(
-                            "flex-1 py-2.5 px-2 rounded-xl text-xs font-medium transition-all duration-200 border active:scale-[0.96] sm:text-sm",
-                            active
-                              ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
-                              : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
-                          )}
-                          style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
-                        >
-                          {t(LOCALE_LABEL_KEYS[locale])}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              </div>
-            )}
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-sm font-medium text-white/80 select-none"
+                        style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                      >
+                        {t("settings.smartScroll")}
+                      </span>
+                      <div className="relative group/tooltip">
+                        <CircleHelpIcon className="size-3.5 text-white/40 cursor-help" />
+                        <div className="absolute bottom-full left-0 -translate-x-2 mb-2 w-56 pointer-events-none z-50 opacity-0 group-hover/tooltip:opacity-100 transition-opacity duration-200">
+                          <div
+                            className="bg-zinc-900/90 border border-white/[0.15] rounded-lg px-3 py-2 text-xs text-white/90 leading-relaxed shadow-xl z-50"
+                            style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                          >
+                            {t("settings.smartScrollTooltip")}
+                          </div>
+                          <div className="w-2 h-2 bg-zinc-900/90 border-r border-b border-white/[0.15] rotate-45 ml-3 -mt-1" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      {([true, false] as const).map((value) => {
+                        const active = settings.smartScroll === value;
+                        return (
+                          <button
+                            key={String(value)}
+                            type="button"
+                            onClick={() => void update({ smartScroll: value })}
+                            className={cn(
+                              "flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-200 border active:scale-[0.96]",
+                              active
+                                ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
+                                : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
+                            )}
+                            style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                          >
+                            {t(value ? "settings.on" : "settings.off")}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.40 }}
+                    className="flex flex-col gap-3"
+                  >
+                    <span
+                      className="text-sm font-medium text-white/80 select-none"
+                      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                    >
+                      {t("settings.language")}
+                    </span>
+                    <div className="flex gap-2">
+                      {APP_LOCALES.map((locale) => {
+                        const active = activeLocale === locale;
+                        return (
+                          <button
+                            key={locale}
+                            type="button"
+                            onClick={() => void selectLocale(locale)}
+                            className={cn(
+                              "flex-1 py-2.5 px-2 rounded-xl text-xs font-medium transition-all duration-200 border active:scale-[0.96] sm:text-sm",
+                              active
+                                ? "bg-purple-500/20 border-purple-500/40 text-white shadow-lg shadow-purple-500/10"
+                                : "bg-white/[0.04] border-white/[0.08] text-white/60 hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white/80",
+                            )}
+                            style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+                          >
+                            {t(LOCALE_LABEL_KEYS[locale])}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                </div>
+              )}
             </div>
           </motion.div>
         </SheetContent>
